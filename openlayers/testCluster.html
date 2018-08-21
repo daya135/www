@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>testCluster</title>
+        <script src="../js/ol.js"></script>
+        <script src="../js/jquery-1.11.1.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="../css/ol.css" />
+    </head>
+
+    <body>
+        <div id="map" style="width: 100%; height: 100%;"></div>
+        <script>
+            let projection = ol.proj.get('EPSG:4326');
+            let bounds = [20, 20, 50, 50];
+            let center = [40, 30];
+
+            let source = new ol.source.Vector({
+
+            });
+
+            let vLayer = new ol.layer.Vector({
+                source: source
+            });
+            let rLayer = new ol.layer.Tile({
+                source: new ol.source.OSM()
+            });
+            let view = new ol.View({
+                projection: projection,
+                center: center,
+                zoom: 6
+            });
+
+            let map = new ol.Map({
+                target: 'map',
+                view: view,
+                layers: [vLayer]
+            });
+
+            //          let lineCoordinate = [
+            //              [20, 35],
+            //              [30, 32],
+            //              [20, 30],
+            //              [50, 30],
+            //              [50, 50],
+            //              [60, 60],
+            //              [50, 65]
+            //          ];
+            let lineCoordinate = [
+                [40, 30],
+                [41, 30],
+                [41, 31]
+            ];
+            //          let line = new ol.Feature(new ol.geom.LineString(lineCoordinate));
+            //          source.addFeature(line);
+
+            let colors = ['#FF6EB4', '#FF4500', '#DAA520', '#C0FF3E', '#B0E2FF', '#8B1A1A', '#454545', '#FFB90F']
+            let start = lineCoordinate[0];
+            let end = lineCoordinate[0];
+            let coordinates = new Array();
+            let features = new Array();
+
+            for(let i = 1; i < lineCoordinate.length; i++) {
+                end = lineCoordinate[i];
+
+                let dx = end[0] - start[0];
+                let dy = end[1] - start[1];
+                let rotation = Math.abs(Math.atan2(dy, dx));
+                let points = getPoints(start, end);
+                for(let point of points) {
+                    let gPoint = new ol.geom.Point(point)
+                    gPoint.setProperties({
+                        "rotation": rotation
+                    }, true);
+                    let feature = new ol.Feature(gPoint);
+                    
+//                  let styleFunc = function(feature) {
+//                      console.log(feature);
+////                      let FtScale = map === null ? 0.5 : map.getView().getZoom() * 0.1;
+//                      return new ol.style.Style({
+//                          image: new ol.style.Icon({
+//                              src: '../img/icon/shanqu.png',
+//                              scale: 0.2,
+//                              rotation: -rotation
+//                          })
+//                      });
+//                  }
+//                  feature.setStyle(styleFunc);
+                    features.push(feature);
+                }
+                coordinates = coordinates.concat(points);
+                //              showPoints(points)
+
+                let style1 = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: colors[Math.round(points.length) % 8],
+                        width: 2
+                    })
+                })
+                let subLine = new ol.Feature(new ol.geom.LineString([start, end]));
+                subLine.setStyle(style1)
+                source.addFeature(subLine);
+
+                start = end;
+            }
+
+            let source2 = new ol.source.Vector({
+                features: features
+            });
+            var clusterSource = new ol.source.Cluster({
+                distance: 20,
+                source: source2
+            });
+            let styleCache = {};
+            let count = 1;
+            let clusters = new ol.layer.Vector({
+                source: clusterSource,
+                style: function(feature) {
+
+                    let size = feature.get('features').length;
+//                  let rotation = feature.get('features')[0].getProperties().rotation;
+                    console.log(feature, count++)
+                    let style = styleCache[size];
+                    if(!style) {
+                        //                      let FtScale = map === null ? 0.5 : map.getView().getZoom() * 0.1;
+                        style = new ol.style.Style({
+                            image: new ol.style.Icon({
+                                src: '../img/icon/shanqu.png',
+                                scale: 0.2,
+//                              rotation: -rotation
+                            })
+                        });
+                        styleCache[size] = style;
+                    }
+                    return style;
+                }
+            });
+            map.addLayer(clusters);
+
+            function showPoints(points) {
+                console.log(points)
+                style = new ol.style.Style({
+                    image: new ol.style.Icon({
+                        src: '../img/icon/X_black.png'
+                    })
+                });
+                for(let point of points) {
+                    let pointObj = new ol.Feature(new ol.geom.Point(point));
+                    pointObj.setStyle(style);
+                    source.addFeature(pointObj);
+                }
+            }
+
+            function getPoints(start, end) {
+                let coordinates = new Array();
+                if(Math.abs(start[0] - end[0]) < 0.01) {
+                    let tempStart = start[1];
+                    if(Math.abs(end[1] - tempStart) > 0.2) {
+                        tempStart = tempStart + 0.1;
+                        coordinates.push([start[0], tempStart]);
+                    }
+                    while(Math.abs(end[1] - tempStart) > 0.2) {
+                        tempStart = tempStart + 0.2;
+                        coordinates.push([start[0], tempStart]);
+                    }
+                } else if(Math.abs((start[1] - end[1])) < 0.01) {
+                    let tempStart = start[0];
+                    if(Math.abs(end[0] - tempStart) > 0.2) {
+                        tempStart = tempStart + 0.1;
+                        coordinates.push([tempStart, start[1]]);
+                    }
+                    while(Math.abs(end[0] - tempStart) > 0.2) {
+                        tempStart = tempStart + 0.2;
+                        coordinates.push([tempStart, start[1]]);
+                    }
+                } else {
+                    let dis = Math.sqrt(Math.pow(start[0] - end[0], 2) + Math.pow(start[1] - end[1], 2));
+                    let tempStart = new Array(2);
+                    let tempDis = dis;
+                    if(tempDis > 0.2) {
+                        offX = 0.1 * (end[0] - start[0]) / dis;
+                        offY = 0.1 * (end[1] - start[1]) / dis;
+                        tempStart[0] = start[0] + offX;
+                        tempStart[1] = start[1] + offY;
+                        tempDis -= 0.1;
+                        coordinates.push([tempStart[0], tempStart[1]]);
+                    }
+                    while(tempDis - 0.2 > 0) {
+                        offX = 0.2 * (end[0] - start[0]) / dis;
+                        offY = 0.2 * (end[1] - start[1]) / dis;
+                        tempStart[0] = tempStart[0] + offX;
+                        tempStart[1] = tempStart[1] + offY;
+                        tempDis -= 0.2;
+                        coordinates.push([tempStart[0], tempStart[1]]);
+                    }
+                }
+                return coordinates;
+            }
+        </script>
+    </body>
+
+</html>

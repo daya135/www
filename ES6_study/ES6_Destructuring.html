@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>ES6解构赋值</title>
+		<script>
+			let a = 0;
+			let b = 1;
+			let c = 2;
+			let [x,y,...z] = [a,b,c]
+			console.log(x,y,z);
+			
+			let [d, e = 'aa'] = [a]
+			console.log(d, e)
+			
+			let {foo1: foo, bar1: bar} = {foo1 : 'fooooo', bar1: 'barrr'}
+			console.log(foo, bar)
+			
+			let obj = {
+			  p: [
+			    'Hello',
+			    { y: 'World' }
+			  ]
+			};
+			let {p:[q, {y:r}]} = obj;
+			console.log(q)
+			console.log(r)
+			
+			/* set的解构赋值 */
+			let set = new Set().add('a').add('b').add('c');
+			[x, y] = set;
+			let [first, ...rest] = set;
+			console.log('x, y: ', x, y);
+			console.log('first, rest: ', first, rest);
+            
+            
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="../js/vue.js"></script>
+		<title>testVue-watch</title>
+		<style>
+			
+		</style>
+	</head>
+	<body>
+		<h3>先看看watch用法：</h3>
+		<div id="computed_props">
+			<button @click="getMapInfos">mapInfos</button>
+			<button @click="getData">getData</button>
+			<p v-for="mapInfo in mapInfos">{{mapInfo.id}}</p>
+		</div>
+		
+		<script>
+			
+			function testcall(sql, success) {
+				exec(sql, success);
+			}
+			
+			var exec = function(sql, callback) {
+				console.log('exec', sql);
+				console.log('exec', callback);
+				setTimeout(function(){callback('111')}, 1000); //延时模拟数据库操作
+				//callback('111');
+			}
+			
+			var successFuc = (result) => {
+							console.log('怎么不回调？？');
+							var map = new Object();
+							map.id = result;
+							this.mapInfos = new Array();
+							this.mapInfos.push(map);		//代码会执行，但Vue.data没有被修改？？？
+							this.a = '2';			
+							console.log('a:', this.a);
+							
+					};
+			
+			var vm = new Vue({
+				el: '#computed_props',
+				data: {
+					mapInfos: [],
+					a: '1'
+				},
+				methods: {
+					getMapInfos: function(){
+						testcall('aaa', (result) => {
+							console.log('怎么不回调？？');
+							var map = new Object();
+							map.id = result;
+							this.mapInfos = new Array();
+							this.mapInfos.push(map);	
+							this.a = '2';			
+							console.log('a:', this.a);
+							
+						});
+						//exec('aaa', successFuc); //这样也不行，vue.data没有变动
+						
+					},
+					getData: function () {
+						console.log('a:', this.a);
+						console.log('mapInfos:', this.mapInfos);
+					}
+				},
+				computed: {},
+				watch: {
+					//function的参数为被监听对象的值
+					mapInfos: function(arg) {
+						console.log('检测到maoInfo变动');
+					},
+					a: function(arg) {
+						console.log('检测到a变动');
+					}
+				},
+			});
+
+		</script>
+	</body>
+</html>

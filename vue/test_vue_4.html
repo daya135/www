@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="js/vue.js"></script>
+		<title>testVue custom instructions</title>
+	</head>
+	<body>
+		<div id="app">
+			<p>页面载入时，input 元素自动获取焦点：</p>
+    		<input v-focus>
+    		<hr>
+    		<div v-runoob:hello.a.b="message"></div>
+		</div>
+		<script>
+			Vue.directive('focus',{
+				//指令定义函数提供了几个钩子函数
+				//inserted: 被绑定元素插入父节点时调用（父节点存在即可调用，不必存在于 document 中）。
+				inserted: function(el){
+					//el:指令所绑定的元素，可以用来直接操作 DOM 。
+					el.focus();
+					el.value = "顺便设置默认值"
+				}
+			})
+			Vue.directive('runoob',{
+				bind: function (el, binding, vnode) {
+					var s = JSON.stringify;
+					//具体含义请查阅钩子函数参数
+					el.innerHTML = 
+					    'name: '       + s(binding.name) + '<br>' +
+  				        'value: '      + s(binding.value) + '<br>' +
+				        'expression: ' + s(binding.expression) + '<br>' +
+				        'argument: '   + s(binding.arg) + '<br>' +
+				        'modifiers: '  + s(binding.modifiers) + '<br>' +
+				        'vnode keys: ' + Object.keys(vnode).join(', ')
+				}
+			})
+			new Vue({
+			  el: '#app',
+			  data: {
+			  	message: 'this message'
+			  }
+			})
+		</script>
+	</body>
+</html>

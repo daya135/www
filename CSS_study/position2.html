@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>test position</title>
+		<style>
+		    header, footer{
+		        background-color:gray ;
+		        height: 100px;
+		    }
+		    .body {
+		        background-color: #0088BB;
+		        height: 600px;
+		    }
+            .left {
+                float: left;
+                width: 10%;
+            }
+            .right {
+                float: right;
+                width: 90%;
+                height: 100%;
+                background-color: #AAAAAA;
+            }
+		    .info {
+		        position: fixed;
+		        right: 10px;
+		        bottom: 10px;
+		        width: 200px;
+		        height: 200px;
+		        background-color: indianred;
+		    }
+		    .info, .left, .right, footer {
+		        text-align: center;
+		    }
+		    #favicon {
+		        height: 100%;
+		    }
+		    #favicondiv {
+		        position: absolute;
+		        height: 80px;
+		        top: 15px;
+		        left: 15px;
+		    }
+		    #navigation {
+		        position: absolute;
+		        left: 20%;
+		        top: 40px;
+		    }
+		    #navigation td {
+		        font-size: 30px;
+		        width: 200px;
+		    }
+		</style>
+	</head>
+	
+	<body>
+	   <header>
+	       <div id="favicondiv"><img id="favicon" src="../img/favicon.ico" /></div>
+	       <div id="navigation">
+	           <table>
+	               <tr>
+	                   <td>AAA</td>
+	                   <td>BBB</td>
+	                   <td>CCC</td>
+	                   <td>DDD</td>
+	               </tr>
+	           </table>
+	       </div>
+	   </header>
+	   <div class="body">
+	       <div class="left">
+	           <ul>
+	               <li>first</li>
+	               <li>second</li>
+	               <li>third</li>
+	           </ul>
+	       </div>
+	       <div class="right">this main content</div>
+	   </div>
+	   <footer>使用条款和隐私条款。版权所有，保留一切权利</footer>
+	    
+	   <div id="info" class="info">这里是广告
+	       <button onclick="Close()">点我关闭</button>
+	   </div>
+	</body>
+	<script>
+	    function Close() {
+	        document.getElementById("info").style.display = 'none';
+	    }
+	</script>
+</html>

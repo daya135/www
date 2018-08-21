@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>testjquery</title>
+		<script src="js/jquery-1.11.1.min.js"></script>
+		<script src="ES6_study/js_study.js"></script>
+	</head>
+	<body>
+		<select id="select">
+			<option value="1" customAttr="aa">第一项</option>
+			<option value="2" customAttr="bb">第二项</option>
+		</select>
+		<br/>
+		<button id="button">button</button>
+		<br/>
+		<p id="p">cookie value：</p>
+		<br/>
+		<button id="button" onclick="myBrowser()">myBrowser</button>
+	</body>
+	<script>
+	    function text_html_val(obj) {
+            console.log('text():', obj.text()); //text会取所有子元素的text节点内容
+        }
+	    
+		$("#button").on('click',function(){
+			//$("#select").val(2);
+			//演示如何遍历option
+			var options = $("#select option"); 
+			options.each(function(){
+				console.log($(this).val());
+				/*从jQuery1.6以后，推出了prop函数，从此attr不再负责prop的工作
+				    在jQuery 1.6及以后版本中，请使用prop()函数来设置或获取checked、selected、disabled等属性。
+				    对于其它能够用prop()实现的操作，也尽量使用prop()函数。
+				* */
+				console.log($(this).attr('selected'));	//dom元素的property不能用attr获取
+				console.log($(this).attr('customAttr'));//dom元素的Attribute可以用attr获取和设置，而且只能是string
+				console.log($(this).prop('selected')); //prop可以设置为对象
+				console.log($(this).prop('customAttr')); //节点的Attribute不能用prop获取
+			});
+			text_html_val(options);
+		})
+		$("#select").on('change', function(){
+			var select = $("#select");
+			var option = $("#select option:selected"); //高级选择器用法
+			var value = select.children('option:selected').val();	//另一种形式的选择器
+			console.log(value);
+			value = select.val();
+			console.log("select.val():" + value);
+			value = select.children('option:selected').html();
+			console.log("select.children('option:selected').html(): " + value);
+			console.log("option.text(): " + option.text());
+		})
+		
+//		arrayAndObjext();
+		
+	</script>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>test openlayers api</title>
+        <script src="../js/ol.js"></script>
+        <script src="../js/jquery-1.11.1.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="../css/ol.css" />
+    </head>
+
+    <body>
+        <div id="map"></div>
+        <script>
+            let rLayer = new ol.layer.Tile({
+                source: new ol.source.OSM()
+            });
+            
+            let source = new ol.source.Vector({});
+            let vLayer = new ol.layer.Vector({
+                source: source
+            });
+            let view = new ol.View({
+//              projection: ol.proj.get('EPSG:4326'),
+                projection: ol.proj.get('EPSG:4512'),
+                center: [0, 0],
+                zoom: 5
+            });
+            let map = new ol.Map({
+                target: 'map',
+                view: view,
+                layers: [rLayer, vLayer]
+            });
+            
+            let pointStyle = new ol.style.Style({
+                        image: new ol.style.Icon({
+                            src: '../img/icon/x_black.png',
+                            size: [116, 126],
+                            scale: 0.3  
+                        })
+                    });
+
+            let points = [0, 0];
+            
+//          for(let i = 0; i < 50; i++) {
+//              for (let j = 0; j < 85; j ++) {
+//                  let point = [points[0] + i * 1, points[1] + 1 * j];
+////                  let point = [points[0] + i * 200000, points[1] + j * 200000];
+//                  let gPoint = new ol.Feature(new ol.geom.Point(new ol.proj.fromLonLat(point, 'EPSG:3857')));
+//                  gPoint.setStyle(pointStyle);
+//                  source.addFeature(gPoint);
+//              }
+//          }
+
+            var proj = new ol.proj.Projection("EPSG:4326");
+            var coor = new ol.proj.fromLonLat([115, 32], 'EPSG:4326');
+            //          console.log(coor)
+        </script>
+
+    </body>
+
+</html>

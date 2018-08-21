@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>generator</title>
+		<script>
+		  /* generator函数，返回的是一个遍历器对象 */
+		 
+		  console.group('iterator & generator');
+		  /* 版本1 generator函数返回的遍历器可以直接用于循环*/
+		  function* foo() {
+		      yeild 1;
+		      yeild 2;
+		      return 3;
+		  }
+		  for(let i of foo()){
+		      console.log(i);
+		  }
+		  
+		  /* 版本2 使用generator为对象添加iterator接口*/
+		  var obj = {
+		      a:'a',
+		      [Symbol.iterator]: function *(){
+		          yield 'b';
+		          yield 'c';
+		          return 'd';
+		      }
+		  }
+		  for(let item of obj) {
+		      console.log(item);
+		  }
+		  console.groupEnd();
+		  
+		  console.group('yield 递归');
+		  var arr = [1, [[2, 3], 4], [5, 6]];
+		  var flat = function* (a){
+		      var length = a.length;
+		      for(var i = 0; i < length; i++) {
+		          var item = a[i];
+		          if(typeof item !== 'number') {
+		              yield* flat(item);  //yield*表达式：在 Generator 函数内部，调用另一个 Generator 函数，返回的是一个遍历器对象
+		          } else {
+		              yield item;
+		          }
+		      }
+		  };
+		  for (var f of flat(arr)) {  //会重复调用flat(arr).next()
+		      console.log(f);
+		  }
+		  console.groupEnd();
+		  
+		  console.group('yield 的返回值，默认总是返回undefined, next()方法参数能改返回值');
+		  function* foo(x) {
+		      var y = 2 *(yield (x + 1));  //yield出现在表达式内必须用括号包起来
+		      var z = yield (y / 3);
+		      return x + y + z;
+		  }
+		  var a = foo(5);
+		  console.log(a.next());  //6
+		  console.log(a.next());  //Object{value:NaN, done:false}     //不传值，上一次next()的值返回undefined
+		  console.log(a.next());  //Object{value:NaN, done:true}
+		  a = foo(5);
+		  console.log(a.next(100));  //6 第一个next()传值被忽略
+          console.log(a.next(6));   //Object{value:4, done:false} next()的参数代表上一次yield的返回值
+          console.log(a.next(4));   //Object{value:29, done:false} 
+		  console.groupEnd();
+   
+		</script>]
+	</head>
+	<body>
+	</body>
+</html>

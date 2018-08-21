@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>test json</title>
+        <script src="../js/ol.js"></script>
+        <script src="../js/jquery-1.11.1.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="../css/ol.css" />
+    </head>
+
+    <body>
+        <div id="map" style="width: 100%; height: 100%;"></div>
+        <script>
+            let projection = ol.proj.get('EPSG:4326');
+            let bounds = [20, 20, 50, 50];
+            let center = [60, 60];
+
+            let source = new ol.source.Vector({
+
+            });
+            let vLayer = new ol.layer.Vector({
+                source: source
+            });
+            let rLayer = new ol.layer.Tile({
+                source: new ol.source.OSM()
+            });
+            let view = new ol.View({
+                projection: projection,
+                center: center,
+                zoom: 2
+            });
+
+            let map = new ol.Map({
+                target: 'map',
+                view: view,
+                layers: [vLayer]
+            });
+
+            //          let style = '"VarLine_20": {"Color": "#dfdfdf","LineWidth": "2em"}';
+            //          let coordinate = "99.4555857219364,179.767353662339;103.821726964981,182.778485554095;" 
+            //              + "105.327292910859,176.906778365172;100.509481884051,174.949542635531;99.4555857219364,179.767353662339";
+            //          coordinate = parseArray(coordinate);
+            //          let polygon = new ol.Feature(new ol.geom.Polygon(coordinate));
+            //          let lineStyle =   new ol.style.Style({
+            //              stroke: new ol.style.Stroke({
+            //                  color: '#dfdfdf',
+            //                  width: '2em'
+            //              }),
+            //              fill: new ol.style.Fill({
+            //                  color: '#000000'
+            //              })
+            //          });
+            //          polygon.setStyle(lineStyle);
+            //          source.addFeature(polygon);
+
+            $.getJSON("test.json", (data) => {
+                let mapBound = data['MapBound'];
+                let mapName = data['MapName'];
+                let maxZoom = parseInt(data['MaxZoom']);
+                let minZoom = parseInt(data['MinZoom']);
+                let featureJson = data['FeatureJson'];
+                let featureStyle = data['FeatureStyle'];
+                
+                view.fit(mapBound, map.getSize());
+                view.setMaxZoom(18);
+                view.setMinZoom(1);
+
+                for(let featureObj of featureJson) {
+                    let featureType = featureObj['Ft'];
+                    let styleType = featureObj['St'];
+                    let style = null;
+                    if(styleType != undefined && styleType != null) {
+                        style = featureStyle[styleType];
+                    }
+                    switch(featureType) {
+                        case 'L':
+                            addLine(source, featureObj, style);
+                            break;
+                        case 'P':
+                            addPoint(source, featureObj, style);
+                            break;
+                        case 'T':
+                            addText(source, featureObj, style);
+                            break;    
+                        case 'A':
+                            addPolygon(source, featureObj, style);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+
+            /* @return Array/Float  转换字符串形式坐标为数字数组
+             * @parm coordinate: String, 坐标值 */
+//          function parseArray(coordinate) {
+//              coordinate = coordinate.split(';');
+//              let tempArr = new Array();
+//              for(let temp of coordinate) {
+//                  temp = temp.split(',');
+//                  temp[0] = parseFloat(temp[0]);
+//                  temp[1] = parseFloat(temp[1]);
+//                  tempArr.push(temp);
+//              }
+//              return tempArr;
+//          }
+
+            /*
+             * @parm： source：ol.source； featureObj：JSON, feature对象；style: JSON, 样式
+             */
+            function addPoint(source, featureObj, style) {
+                let coordinate = featureObj['Cd']
+
+                let styleObj = function() {
+                    let FtScale = map === null ? 0.5 : map.getView().getZoom() * 0.1;
+                    return new ol.style.Style({
+                        image: new ol.style.Icon({
+                            src: '../img/icon/x_black.png',
+                            size: [116, 126],
+                            scale: FtScale
+                        })
+                    });
+                }
+
+                let point = new ol.Feature(new ol.geom.Point(coordinate));
+                point.setStyle(styleObj);
+                source.addFeature(point);
+            }
+
+            function addText(source, featureObj, style) {
+                let coordinate = featureObj['Cd']
+                let styleObj = function() {
+                    let FtScale = map === null ? 0.5 : map.getView().getZoom() * 0.2;
+                    return new ol.style.Style({
+                        text: new ol.style.Text({
+                            text: featureObj['Fn'],
+                            scale: FtScale,
+                            textAlign: 'start'
+                        })
+                    });
+                };
+                let point = new ol.Feature(new ol.geom.Point(coordinate));
+                point.setStyle(styleObj);
+                source.addFeature(point);
+            }
+
+            function addLine(source, featureObj, style) {
+//              let coordinate = parseArray(featureObj['Cd']);
+                let coordinate = featureObj['Cd'];
+                let line = new ol.Feature(new ol.geom.LineString(coordinate));
+                let styles = null;
+
+                if(style['Lt'] == 10) {
+                    let end = coordinate[coordinate.length - 1];
+                    let start = coordinate[coordinate.length - 2];
+                    let dx = end[0] - start[0];
+                    let dy = end[1] - start[1];
+                    let rotation = Math.atan2(dy, dx);
+
+                    styles = function() {
+                        let styleArr = new Array();
+                        let lineStyle = new ol.style.Style({
+                            stroke: new ol.style.Stroke({
+                                color: style['Cr'],
+                                width: style['Lw'],
+//                              lineDash: [5, 5]
+                            })
+                        });
+
+                        let arrowStyle = new ol.style.Style({
+                            geometry: new ol.geom.Point(end),
+                            image: new ol.style.Icon({
+                                src: '../img/icon/arrow.png',
+                                anchor: [0.75, 0.5],
+                                //                              size: [116, 126],
+                                rotateWithView: true,
+                                rotation: -rotation,
+                                scale: map === null ? 0.5 : map.getView().getZoom() * 0.1
+                            })
+                        });
+                        styleArr.push(lineStyle);
+                        styleArr.push(arrowStyle)
+                        return styleArr;
+                    }
+                    line.setStyle(styles);
+                    source.addFeature(line);
+                } else if(style['Lt'] == 9) {
+                    let start = coordinate[0];
+                    let end = coordinate[0];
+                    for(let i = 1; i < coordinate.length; i++) {
+                        end = coordinate[i];
+                        let center = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
+                        let dis = Math.abs(Math.pow(start[0] - end[0], 2) + Math.pow(start[1] - end[1], 2));
+                        if(dis > 10) {
+                            let center = [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2];
+                            let dx = end[0] - start[0];
+                            let dy = end[1] - start[1];
+                            let rotation = Math.abs(Math.atan2(dy, dx));
+                            let style1 = new ol.style.Style({
+                                stroke: new ol.style.Stroke({
+                                    color: colors[Math.round(dis) % 8],
+                                    width: style['Lw']
+                                })
+                            })
+                            let subLine = new ol.Feature(new ol.geom.LineString([start, end]));
+                            subLine.setStyle(style1)
+                            source.addFeature(subLine);
+                            let subPoint = new ol.Feature(new ol.geom.Point(center));
+                            let style2 = function() {
+                                let FtScale = map === null ? 0.5 : map.getView().getZoom() * 0.1;
+                                return new ol.style.Style({
+                                    image: new ol.style.Icon({
+                                        src: '../img/icon/shanqu.png',
+                                        scale: FtScale,
+                                        rotation: rotation
+                                    })
+                                });
+                            }
+                            subPoint.setStyle(style2);
+                            source.addFeature(subPoint);
+                        }
+                        start = end;
+                    }
+                } else {
+                    styles = new ol.style.Style({
+                        stroke: new ol.style.Stroke({
+                            color: style['Cr'],
+                            width: style['Lw'],
+//                          lineDash: [],
+                        })
+                    })
+                    line.setStyle(styles);
+                    source.addFeature(line);
+                }
+            }
+
+            function addPolygon(source, featureObj, style) {
+                let lines = featureObj['Ls'];
+                let coordinate = new Array();
+                for(line of lines) {
+                    let At = line['At'];    //备用
+                    coordinate.push(line['Cd']);
+                    console.log(line['Cd'])
+                }
+                let polygon = new ol.Feature(new ol.geom.Polygon(coordinate));
+                let lineStyle = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: style['Cr'],
+                        width: style['Lw']
+                    }),
+                    fill: new ol.style.Fill({
+                        color: style['Cr']
+                    })
+                });
+                polygon.setStyle(lineStyle);
+                source.addFeature(polygon);
+            }
+        </script>
+    </body>
+
+</html>

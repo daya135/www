@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>call,apply,bind</title>
+    </head>
+    <script>
+        /* fn.call(thisObj[,arg1[, arg2[, [,.argN]]]]]), 通过原型链在Function的原型中找到call方法，call方法的this是其调用者即fn
+         * call方法的执行过程：先让fn方法体中的this变为thisObj，最后执行fn这个函数（通过调用call方法的this()实现，call方法的this是其调用者即fn）。
+         * 
+         * 可以用来代替另一个对象调用一个方法。
+         */
+        console.group("test a.call()")
+
+        function a() {
+            console.log(this);
+        }
+
+        function b() {}
+        var c = {
+            name: 'call'
+        };
+
+        a.call(); //window
+        a.call(null); //window
+        a.call(b); //function b()
+        a.call(c); //Object
+        console.groupEnd()
+
+        console.group("class1 and class2")
+
+        function class1() {
+            this.name = function() {
+                console.log("this is class1's func");
+            }
+        }
+
+        function class2() {
+            class1.call(this); // class1的this指向class2， 则
+        }
+        var f = new class2();
+        f.name(); //name的this指向f，f的this指向class1，则name的调用者是class1
+        console.groupEnd()
+
+        console.group("eat.call(drink)")
+
+        function eat(x, y) {
+            console.log(x + y);
+        }
+
+        function drink(x, y) {
+            console.log(x - y);
+        }
+        eat.call(drink, 2, 3) //将drink的this指向eat，eat.call(drink,3,2) == eat(3,2) 
+        console.groupEnd()
+
+        console.group("animal.showName.call(dog)")
+
+        function Animal() {
+            this.name = "animal";
+            this.showName = function() {
+                console.log(this.name);
+            }
+        }
+
+        function Dog() {
+            this.name = "dog";
+        }
+        var animal = new Animal();
+        var dog = new Dog();
+
+        animal.showName.call(dog); // 完全不懂了！！
+        //意思是把animal的方法放到dog上执行，也可以说，把animal 的showName()方法放到 dog上来执行，所以this.name 应该是 dog。
+        console.groupEnd()
+
+        console.group("Crazy dog")
+
+        function Animal(name) {
+            this.name = name;
+            this.showName = function() {
+                console.log(this.name);
+            }
+        }
+
+        function Dog(name) {
+            Animal.call(this, name);
+        }
+        var dog = new Dog("Crazy dog");
+        dog.showName(); // 输出：Crazy dog
+        //Animal.call(this) 的意思就是使用 Animal对象代替this对象，那么Dog就能直接调用Animal的所有属性和方法。
+        console.groupEnd()
+
+        /* call函数的执行原理 */
+        console.group("prototype") //这句话将日志分组，太好用了！！
+        function fn() {
+            console.log('---------------fn')
+            console.log(this);
+        }
+        var obj = {
+            name: 'iceman'
+        };
+        Function.prototype.myCall = function(context) {
+            eval(this.toString().replace("this", "context"))
+            /* function fn() {
+                console.log('---------------fn')
+                console.log(context);
+            } 重新声明了fn函数 */
+
+            //在这里提取出函数名，并调用
+            eval(this.toString().split("{")[0].replace("function", "")) //fn() 调用重新声明过的fn函数
+        };
+        fn.myCall(obj);
+        console.groupEnd() //日志结束
+
+        /* 加强理解call函数的执行原理！ */
+        console.group(" fn1.call.call(fn2)")
+
+        function fn1() {
+            console.log(1);
+        }
+
+        function fn2() {
+            console.log(2);
+        }
+        fn1.call(); //1  
+        fn1.call(fn2); // 1 对于call函数来说this即fn1，call执行时先把fn1的函数体内的this指向fn2，然后再执行this()（call的this而不是fn1内的this）
+        fn1.call.call(fn2); // 2  注意不是fn1.call().call(fn2) 更不是fn1.call(call(fn2))，这是最容易产生误会的地方
+        /* 正常情况下，fn1.call()函数体内执行时的this()是fn1，但因为最后一个call将函数体内的this改为了fn2，
+         * 所以fn1.call()执行时，调用this()执行的就是fn2()了
+         */
+        console.groupEnd()
+    </script>
+
+    <body>
+    </body>
+
+</html>

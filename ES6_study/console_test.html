@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<script>
+			console.assert(document.getElementById("test")  === undefined, "no such id");
+			function foo(){
+				console.count('foo is be called times:');
+			}
+			foo();
+			foo();
+			
+			console.debug('this is debug message,%s', 'aaa');
+			console.info('this is info message,%s', 'bbb');
+			
+			
+			console.dir(new String());
+			console.log(new String());
+			
+			
+			/* 表格打印 */
+			var dataArr = [  
+			    [111, 222, 332],  
+			    [442, 555, 666]  
+			];  
+			console.table(dataArr);  
+			//JSON对象  
+			var dataJson = [  
+			    {'a':'1.11', 'b':'2.2'},  
+			    {'a':'11.1', 'b':'22.2'},  
+			    {'a':'111.1', 'b':'222.2'}  
+			];  
+			console.table(dataJson);
+			
+			/* 计算time和timeEnd之间代码块的执行时间并显示  */ 
+		    console.time('time');  
+		    for(var i = 0; i < 1000; i++) {  
+		        for(var j = 0; j < 1000; j++) { }  
+		    }  
+		    console.timeEnd('time');  
+		    
+		    
+		    /* 分析profile和profileEnd之间代码的执行情况，即js代码的性能分析。  */ 
+	        function AllFunction(){  
+	            for(var i=0;i<100;i++){  
+	                functionA(10000);  
+	            }  
+	            functionB(10000);  
+	        }  
+  
+      		function functionA(count){ for(var i=0;i<count;i++){} }  
+      		function functionB(count){ for(var i=0;i<count;i++){} }  
+  
+      		console.profile('profile');  
+			AllFunction();  
+			console.profileEnd();  
+ 
+			/* console.trace()用来追踪函数的调用轨迹  */
+			function add(a,b){  
+			    console.trace();  
+			    return a+b;  
+			}  
+			var x = add3(1,1);  
+			function add3(a,b){return add2(a,b);}  
+			function add2(a,b){return add1(a,b);}  
+			function add1(a,b){return add(a,b);} 
+	</script>
+	</head>
+	<body>
+	</body>
+</html>

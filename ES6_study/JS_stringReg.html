@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>String &amp; Regex</title>
+		<script>
+			var str = 'hello 001 world';
+
+			console.log(str.match(/^\w+\s+\d+\s+\w+$/)) //要验证整个字符串的格式则加上首尾即可，整个串是原串的唯一子串
+			
+			console.log(str.match(/\w/g).length)  //加入g则返回一个数组，返回所有子串
+			console.log(str.match(/\w/).length)
+			
+			console.log(str.search(/\d/))   //返回第一个与 regexp 相匹配的子串的起始位置
+			
+			console.log(str.replace(/[\w]+/, 'aaa')) 
+			console.log(str.replace(/[\w]+/g, 'aaa'))  //全局替换
+
+			
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

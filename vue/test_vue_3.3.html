@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="js/vue.js"></script>
+		<title>test render</title>
+
+	</head>
+	<body>
+		<div id="app">
+			<anchor :level="2" title="特征">特征</anchor>
+		</div>
+		<div style="height: 800px;">。。。。</div>
+		<hr>
+		<div id="特征" class="content">this is 特征</div>
+		<script>
+			Vue.component('anchor', {
+				props: {
+					level: {
+						type: Number,
+						required: true
+					},
+					title: {
+						type: String,
+						default: ''
+					}
+				},
+				render: function(createElement) {
+					return createElement(
+						'h' + this.level,
+						[
+							createElement(
+								'a',
+								{
+									attrs: {
+										href: '#' + this.title
+									}
+								},
+								this.$slots.default
+							)
+						]
+					)
+				}
+			});
+			new Vue({
+				el: "#app"
+			})
+		</script>
+	</body>
+</html>

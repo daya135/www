@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="js/vue.js"></script>
+		<title>testVue-watch</title>
+		<style>
+			.active {
+				width: 200px;
+				height: 100px;
+				background: green;
+			}
+			.text-danger {
+				background: dodgerblue;
+			}
+		</style>
+	</head>
+	<body>
+		<h3>先看看watch用法：</h3>
+		<div id="computed_props">
+			千米：<input type="text" v-model="kilometers"/>
+			米：<input type="text" v-model="meters"/>
+			<p id="info"></p>
+			<hr />
+			<h3>对比watch与compute的区别：</h3>
+			<p>使用watch实现：</p>
+			<label>firstName: </label><input type="text" v-model="firstName"/>
+			<label>lastName: </label><input type="text" v-model="lastName"/>
+			<label>fullName: </label><input type="text" v-model="fullName"/>
+			<p>使用compute实现：</p>
+			<label>firstName: </label><input type="text" v-model="fName"/>
+			<label>lastName: </label><input type="text" v-model="lName"/>
+			<label>fullName: </label><input type="text" v-bind:value="computeAllName"/>
+			<p style="color: gray;">watch用于监控数据变动，容易发生使用泛滥的情况；
+				而compute能自动侦听数据变动，而且其相较method来说有缓存特征，可以选择合适场景多用
+			</p>
+		</div>
+		
+
+		<h3>各种样式绑定的语法：</h3>
+		<div id="app">
+			<!-- 可以在原有class上新增；指定class名可以加引号也可以不加 -->
+			<p v-bind:style="{color: activeColor, fontSize: '15px'}">v-bind:style：内联样式</p>
+			<p v-bind:style="styleObject">v-bind:style 使用对象让模板更清晰</p>
+			<p v-bind:style="[styleObject, overridingStyles]">v-bind:style 使用数组</p>
+			<div class="static" v-bind:class="{active: isactive, 'text-danger': hasError}">v-bind:class指令</div>
+			<br>
+			<div v-bind:class="styleComputed">v-bind:class + styleComputed</div>
+		</div>
+		<script>
+			var vm = new Vue({
+				el: '#computed_props',
+				data: {
+					kilometers: 0,
+					meters: 0,
+					firstName: 'Foo',
+					lastName: 'bar',
+					fullName: 'Foobar',
+					fName: 'j',
+					lName: 'zz'
+				},
+				methods: {},
+				ccomputed: {},
+				watch: {
+					//function的参数为被监听对象的值
+					kilometers: function(arg) {
+						this.kilometers = arg;
+						this.meters = arg * 1000;
+					}, 
+					meters: function(arg) {
+						this.meters = arg;
+						this.kilometers = arg / 1000;
+					}, 
+					firstName: function(val) {
+						this.fullName = val + this.lastName;
+					},
+					lastName: function(val) {
+						this.fullName = this.firstName + val;
+					}
+				},
+				computed: {
+					computeAllName: function() {
+						return this.fName + this.lName;
+					}
+				}
+			});
+			vm.$watch('kilometers', function(newValue, oldValue){
+				// 这个回调将在 vm.kilometers 改变后调用
+				document.getElementById("info").innerHTML = "修改前值为: " + oldValue + "，修改后值为: " + newValue;
+			});
+			
+			var vm2 = new Vue({
+				el: "#app",
+				data: {
+					isactive: true,
+					hasError: true,
+					styleObject: {
+						color: 'red',
+      					fontSize: '15px'
+					},
+					overridingStyles: {
+				      'font-weight': 'bold'
+				   },
+					activeColor: 'green',
+					fontSize: 15
+				},
+				computed: {
+					//通过计算属性返回一个对象，是一种强大的模式
+					styleComputed: function(){
+						return {
+							active: this.isactive && this.hasError,
+							'text-danger' :  this.error && this.error.type === 'fatal'
+						}
+					}
+				}
+			});
+		</script>
+	</body>
+</html>

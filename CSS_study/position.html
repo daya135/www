@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+	    <div>普通流布局，块级元素</div>
+	    <span>普通流布局，行级元素</span>
+	    <span>普通流布局，行级元素</span>
+	    <div style="position: relative; top: 10px;">相对定位，块级元素，元素仍占据原来的位置，所以其偏移量会覆盖别的元素</div>
+        <div>普通流布局，和相对定位元素重合了</div>
+        <div style="position: absolute;left: 100px;top: 200px; width: 800px; height: 500px; background: gray;">
+            <div style="position: fixed; right: 100px; background: yellow;">固定定位，相对于屏幕，不能被滚动条滚动，默认是靠在父级元素的左上角</div>
+            <div style="position: absolute; left: 200px;top:30px; background: gold;">绝对定位,相对于父级元素</div>
+            <span style="position: relative; left:50px; background: green; opacity: 0.5;">相对定位,元素仍占据原来的位置，所以会覆盖其它元素</span>
+            <span style="position: relative; background: greenyellow;opacity: 0.5;">相对定位, 和相对定位元素重合了</span>
+        </div>
+	    
+	    <p>换
+	        行</p>
+	    
+	</body>
+</html>

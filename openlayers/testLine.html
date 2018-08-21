@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>testLine</title>
+        <script src="../js/ol.js"></script>
+        <script src="../js/jquery-1.11.1.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="../css/ol.css" />
+    </head>
+
+    <body>
+        <div id="map" style="width: 100%; height: 100%;"></div>
+        <script>
+            
+
+            let bounds = [80, 20, 130, 60];
+            let center = [110, 25];
+//          let projection = new ol.proj.Projection({
+//              code: 'EPSG:4326',
+//              units: 'DEGREES',
+//              extent: bounds
+//          });
+            let projection = ol.proj.get('EPSG:4326');
+
+            let source = new ol.source.Vector({
+
+            });
+
+            let vLayer = new ol.layer.Vector({
+                source: source
+            });
+            let rLayer = new ol.layer.Tile({
+                source: new ol.source.OSM()
+            });
+            let view = new ol.View({
+                projection: projection,
+                center: center,
+                zoom: 6
+            });
+
+            let map = new ol.Map({
+                target: 'map',
+                view: view,
+                layers: [rLayer,vLayer]
+            });
+
+            let lineCoordinate = [
+                [100, 30],
+                [120, 30]
+            ];
+            let lineCoordinate2 = [
+                [100, 31],
+                [120, 31]
+            ];
+            let lineCd3 = [[112,29],[115.99,29]];
+            let lineCd4 = [[116,29],[118,29]];
+            let peak = [115.995, 29];
+            
+            //          let line = new ol.Feature(new ol.geom.LineString(lineCoordinate));
+            //          source.addFeature(line);
+
+            let colors = ['#FF6EB4', '#FF4500', '#DAA520', '#C0FF3E', '#B0E2FF', '#8B1A1A', '#454545', '#FFB90F']
+            let lineStyle = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: '#FF6EB4',
+                        width: 2,
+                        lineDash: [10, 5, 1, 5]
+                    })
+                });
+            let lineStyle2 = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: '#000000',
+                        width: 3,
+                        lineCap: 'butt',
+                        lineDash: [10, 10]
+//                      miterLimit: 1
+                    })
+                });  
+            let lineStyle2_1 = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: '#FFFFFF',
+                        width: 3,
+                        lineCap: 'butt',
+                        lineDash: [0,10,10,0]  //生成与黑线相反填充顺序的虚线
+//                      miterLimit: 1
+                    })
+                });     
+            let lineStyle3 = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: '#000000FF',
+                        lineCap: 'butt',
+                        width: 3,
+                    })
+                })
+            let lineStyle3_1 = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: '#000000',
+                        width: 10,
+                        lineCap: 'butt',
+                        lineDash: [1, 2, 1, 30]
+                    })
+                })
+            let pointStyle = function() {
+                let FtScale = map === null ? 0.5 : map.getView().getZoom() * 0.05;
+                let CurDist = ol.sphere.getDistance([115.99,32], [116,32]);
+                let resolution = view.getResolution();
+                let ins = CurDist / projection.getMetersPerUnit() / resolution
+
+                console.log('distance', CurDist, resolution, projection.getMetersPerUnit(), ins);
+                
+                let coorlen = CurDist / projection.getMetersPerUnit();
+                
+                return new ol.style.Style({
+                    image: new ol.style.Icon({
+                        src: '../img/icon/peak.png',
+                        size: [200, 200],
+                        scale: 0.1 + ((view.getZoom() - 11.4) > 0 ? (view.getZoom() - 11.4) : 0) * 0.1
+//                      scale:3
+                     })
+                });
+            }
+            
+            map.getView().on('change:resolution', function(){
+                
+                 let x=1280+ ((115.995-110)/view.getResolution()+0.5);
+                 let y=800- ((29-25)/view.getResolution()+0.5);
+                 console.log('resolution, zoom ', view.getResolution(), view.getZoom(), x, y);
+            });
+            
+            let line = new ol.Feature(new ol.geom.LineString(lineCoordinate));
+            let line2 = new ol.Feature(new ol.geom.LineString(lineCoordinate2));
+            let line2_1 = new ol.Feature(new ol.geom.LineString(lineCoordinate2));
+            let line3 = new ol.Feature(new ol.geom.LineString(lineCd3));
+            let line3_1 = new ol.Feature(new ol.geom.LineString(lineCd3));
+            let line4 = new ol.Feature(new ol.geom.LineString(lineCd4));
+            let line4_1 = new ol.Feature(new ol.geom.LineString(lineCd4));
+            let point = new ol.Feature(new ol.geom.Point(peak));
+            
+            line.setStyle(lineStyle);
+            line2.setStyle(lineStyle2);
+            line2_1.setStyle(lineStyle2_1);
+            line3.setStyle(lineStyle3);
+            line3_1.setStyle(lineStyle3_1);
+            line4.setStyle(lineStyle3);
+            line4_1.setStyle(lineStyle3_1);
+            point.setStyle(pointStyle);
+            source.addFeature(line);
+            source.addFeature(line2_1);
+            source.addFeature(line2);
+            source.addFeature(line3);
+            source.addFeature(line3_1);
+            source.addFeature(line4);
+//          source.addFeature(line4_1);
+            source.addFeature(point);
+            
+            
+        </script>
+    </body>
+
+</html>

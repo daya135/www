@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="../js/vue.js"></script>
+		<title>testVue Event</title>
+	</head>
+	<body>
+		<div id="app">
+			<h2>APP1</h2>
+			<button v-html="'按钮被点击了' + counter + '次'" v-on:click="counter += 1"></button>
+			<br>
+			<button v-on:click="greet">button</button><span id="msg"></span><br>
+			<hr>
+			<p>事件修饰符</p>
+			<!-- Alt + C -->
+			<input @keyup.alt.67="clear">
+			<!-- Ctrl + Click -->
+			<div @click.ctrl="doSomething">Do something</div>
+			<hr />	
+			<p>组件</p>
+			<global-component></global-component>
+			<local-component></local-component><!--另一个Vue实例定义的局部组件在此处不能用-->
+			<!-- prop 是单向绑定的：当父组件的属性变化时，将传导给子组件，但是不会反过来。-->
+			<h3>测试父组件向子组件传递数据</h3>
+			<prop-component message="hello"></prop-component>  <!--字面量语法，不能传递数值-->
+			<div>
+		      <input v-model="parentMsg">
+		      <br>
+		      <prop-component v-bind:message="parentMsg"></prop-component><!--使用v-bind动态动态语法-->
+		    </div>
+			<hr />
+			<ol>
+				<todo-item v-for="item in sites" v-bind:todo="item"></todo-item>
+			</ol>
+			<hr/>
+			<p>测试validate prop</p>
+			<test-validate v-bind:prop-a="100" v-bind:test-boolean="true" v-bind:prop-b="propB"></test-validate> <!--在html中必须将驼峰式转为短横线连接！！！-->
+			<hr/>
+			<p>测试.sync双向绑定，这实际上是个语法糖，只是省了一部分父组件这边监听的代码</p>
+			<span>{{foo}}</span>
+			<test-sync v-bind:foo.sync="foo"></test-sync>
+			<hr />
+			<h3>子组件向父组件传递消息1，父组件监听事件</h3>
+			<div id="counter-event-example">
+		      <p>{{ total }}</p>
+		      <button-counter v-on:increment="incrementTotal"></button-counter><!--监听事件-->
+		      <button-counter v-on:increment="incrementTotal"></button-counter>
+		   </div>
+			<h4>子组件向父组件传递消息2，父组件监听事件并获取回传数据</h4>
+		    <div id="message-event-example">
+				<p v-for="msg in messages">{{ msg }}</p>
+				<button-message v-on:message="handleMessage"></button-message>
+			</div>
+			<h4>父组件监听原生事件</h4>
+			<button-message v-on:click.native="myAlert"></button-message>
+		</div>
+		<div id="app2">
+			<h2>APP2</h2>
+			<global-component></global-component>
+			<local-component></local-component>
+			<subcomponent></subcomponent> <!--组件中定义的组件在此处不能用-->
+			<hr />
+			<h3>测试for指令，配合组件使用</h3>
+			<input 
+				v-model="newTodoText"
+				v-on:keyup.enter="addNewTodo"
+				placeholder="add new Todo"
+			>
+			<ul>
+				<li
+				 is="test-for"
+				 v-for="(todo, index) in todos"
+				 v-bind:key="todo.id"
+				 v-bind:title="todo.title"
+				 v-on:remove="todos.splice(index,1)"
+				></li>
+			</ul>
+		</div>
+		<script>
+			//要放在new Vue()实例前面
+			//所有的 Vue 组件同时也都是 Vue 的实例，所以可接受相同的选项对象（除了一些根级特有的选项）
+			Vue.component(
+				'global-component', {
+					template: '<div>A global component!</div>'
+				}
+			)
+			Vue.component(
+				'prop-component', {
+					props: ['message'], //子组件要显式地用 props 选项声明它预期的数据：
+					template: '<span>{{ message }}</span>'
+				}
+			)
+			Vue.component(
+				'todo-item', {
+					props: ['todo'],	//绑定对象
+					template: '<li>{{ todo.text }}</li>'
+				}
+			)
+			Vue.component(
+				'test-validate', {
+					props:{
+						propA: Number,
+						testBoolean: {
+							type: Boolean,
+						 	validator: function(value) {
+						 		console.log(typeof value);
+								return value;
+						 	}
+						},
+						propB: {
+							type: String,
+							required: true,
+						//	default: "default value",
+							default: function() {
+								return 'default value'
+							},
+							//即使校验失败也不会造成组件无法渲染，只是会在console打印一个warn
+							validator: function(value){
+								return value.length > 4;	
+							}
+						}	
+					},
+					template: '<div><p>{{propA}}</p><p>{{propB}}</p><p>{{testBoolean}}</p></div>'
+				}
+			)
+			Vue.component('test-for', {
+				props:['title'],
+				template: '\
+					<li>\
+						{{title}}\
+						<button @click="$emit(\'remove\')">x</button>\
+					</li>\
+				'			
+			})
+			Vue.component('test-sync', {
+				props:['foo'],
+				data: function(){
+					return {newfoo: 'new value'}
+				},
+				template: '\
+					<div>\
+					<input type="text" v-model="newfoo"/>\
+					<button @click="update">update</button>\
+					</div>\
+				',
+				methods :{
+					update: function() {
+						//显式地触发一个更新事件，更新prop值，不能直接用v-model绑定到prop上
+						this.$emit('update:foo', this.newfoo)
+					}
+				}
+			})
+			Vue.component(
+				'button-counter', {
+					template: '<button v-on:click="incrementHandler()">{{counter}}</button>',
+					//data 必须是函数
+					data: function () {
+						//返回一个新对象，让counter对象独立出来
+					    return {
+					      counter: 0
+					    }
+				  	},
+				  	methods: {
+				  		incrementHandler: function() {
+				  			this.counter += 1;
+				  			this.$emit('increment'); // 触发事件
+				  		}
+				  	}
+				}
+			)
+			Vue.component(
+				'button-message', {
+					template: '\
+						<div>\
+							<input type="text" v-model="message"/>\
+							<button v-on:click="handleSendMessage">send</button>\
+						</div>\
+					',
+					data: function(){
+						return {message: 'test message'}
+					},
+					methods: {
+						handleSendMessage: function() {
+							this.$emit('message', {message: this.message}) //第二个参数将回传给监听器
+						}
+					}
+				}
+			)
+			var vm = new Vue({
+				el: "#app",
+				data: {
+					counter: 0,
+					total: 0,
+					parentMsg: '这是父组件内容',
+					sites: [
+						{ text: 'Runoob' },
+				     	{ text: 'Google' },
+				     	{ text: 'Taobao' }
+					],
+					propA: 100,
+					propB: 'hello',
+					//testBoolean: 'true',
+					messages: [],
+					foo: 'this is foo'
+				},
+				methods: {
+					greet: function (event) {
+						console.log(document.getElementById("msg").innerHTML);
+						document.getElementById("msg").textContent = event.target.name + "被点击了" + this.counter + "次";
+						console.log(document.getElementById("msg").innerHTML);
+					},
+					doSomething: function(event) {
+						alert('dosomething');
+					},
+					clear: function (event) {
+						alert(event.target.value);
+						event.target.value = '';
+					},
+					incrementTotal: function () {
+				   		this.total += 1;
+				    },
+				   	handleMessage: function(payload) {
+						this.messages.push(payload.message)
+					},
+					myAlert: function() {
+						alert('.native修饰符，父组件监听原生事件')
+					}
+				}
+			})
+			
+			
+			
+			var subcomponent = {
+				template:'\
+					<span>this is sub component</span>\
+				'
+			}
+			var child = {
+				components: {
+					'subcomponent': subcomponent
+				},
+  				template: '<div>A loacl component!<br><subcomponent></subcomponent></div>'
+			}
+			var vm2 = new Vue({
+				el: "#app2",
+				data: {
+					todos: [
+				      {
+				        id: 1,
+				        title: 'Do the dishes',
+				      },
+				      {
+				        id: 2,
+				        title: 'Take out the trash',
+				      },
+				      {
+				        id: 3,
+				        title: 'Mow the lawn'
+				      }
+				    ],
+				    nextTodoId: 4,
+				    newTodoText: ''
+				},
+				methods: {
+					addNewTodo: function () {
+				    	this.todos.push({
+				        	id: this.nextTodoId++,
+				        	title: this.newTodoText
+				      	})
+				      	this.newTodoText = ''
+				    }
+				},
+				components: {
+					'local-component': child
+				}
+			})
+
+		</script>
+	</body>
+</html>

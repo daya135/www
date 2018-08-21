@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>testFill</title>
+        <script src="../js/ol.js"></script>
+        <script src="../js/jquery-1.11.1.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="../css/ol.css" />
+    </head>
+
+    <body>
+        <div id="map" style="width: 100%; height: 100%;"></div>
+        <script>
+            let projection = ol.proj.get('EPSG:4326');
+            let bounds = [20, 20, 50, 50];
+            let center = [25, 25];
+
+            let source = new ol.source.Vector({
+
+            });
+
+            let vLayer = new ol.layer.Vector({
+                source: source
+            });
+            let rLayer = new ol.layer.Tile({
+                source: new ol.source.OSM()
+            });
+            let view = new ol.View({
+                projection: projection,
+                center: center,
+                zoom: 4
+            });
+
+            let map = new ol.Map({
+                target: 'map',
+                view: view,
+                layers: [rLayer, vLayer]
+            });
+
+            let line1 = [[10, 40],[50, 40],[50,10],[10,10],[10, 40]];
+            let line2 = [[20,30],[30,30],[30,20],[20,20],[20,30]];
+            
+            let polygon1 = new ol.Feature(new ol.geom.Polygon([line1, line2]));
+            let polygon2 = new ol.Feature(new ol.geom.Polygon([line2]));
+            let lineStyle1 = new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: '#00000030',
+                    width: 10
+                }),
+                fill: new ol.style.Fill({
+                    color: '#454545F0'  //最后两位表示透明度00～FF
+                })
+            });
+            let lineStyle2 = new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: '#00000030',
+                    width: 10,
+                    lineCap: 'butt'
+                }),
+                fill: new ol.style.Fill({
+                    color: '#1C86EE00'
+                })
+            });
+            polygon1.setStyle(lineStyle1);
+//          polygon2.setStyle(lineStyle2);
+            source.addFeature(polygon1);
+//          source.addFeature(polygon2);
+        </script>
+    </body>
+
+</html>

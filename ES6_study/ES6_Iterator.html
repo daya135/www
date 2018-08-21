@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>test Interator</title>
+		<script src="../js/jquery-1.11.1.min.js"></script>
+		<script>
+		    /* 扩展运算符（...）、解构赋值和Array.from方法内部调用的，都是遍历器接口 */
+		    /* Interator的关键之一，遍历器next(){return {value:'value',done:true/false}}（如果采用generator函数来写则会更简洁） */
+			function makeIterator(array) {
+			    var nextIndex = 0;
+			    return {
+			        next: function() {   //next 是一个方法
+			           return nextIndex < array.length ?
+			               {value: array[nextIndex++], done: false} : 
+			               {value: undefined, done: true}
+			        }
+			    }
+			}
+			var it = makeIterator(['a', 'b'])
+			console.log(it.next());
+			console.log(it.next());
+			
+			/* Iterator接口的关键之二，Symbol.iterator属性，是一个遍历器生成函数 
+			 * 对象或其原型链上有此属性，就可以用for...of循环遍历！
+			 */
+			let defaultIterator = {
+			    [Symbol.iterator] : function() {
+			        let i = 0;
+			        return {
+			            next: function () {
+			                return i < 3 ?
+			                 {value: i++, done: false} :
+			                 {value: undefined, done: true}
+			            }
+			        };
+			    }
+			};
+			for(var obj of defaultIterator) {
+			    console.log(obj);
+			}
+			
+			/* 默认实现了Iterator接口的内置数据类型 array,map,set, ...*/
+			var arr = ['a', 'b'];
+			let iter = arr[Symbol.iterator]();   //可以看出与上面的手动实现是一致的
+			console.log(iter.next());
+			
+			/* 类数组对象部署iterator接口的例子 
+			 * 类数组对象：有length属性，且属性名是1,2,3....(还记得函数的arguments对象吗)
+			 */
+			let iterable = {
+			    0: 'a',
+			    1: 'b',
+			    length: 2,
+			    [Symbol.iterator]: Array.prototype[Symbol.iterator]  //直接用方括号引用属性，则会去Array的原型链上查找，但Array的原型是function，所以不行
+//              [Symbol.iterator]: new Array()[Symbol.iterator]
+			}
+			for (let item of iterable) {
+			    console.log(item)
+			}
+			/* 字符串也是类数组对象 */
+			let someString = 'hello';
+			var iterator = someString[Symbol.iterator]();
+			console.log(iterator.next());    //输出{done: false, value: "h"}
+			for (let c of someString) {      //重头开始迭代
+			    console.log(c)
+			}
+			
+			/* 扩展运算符，内部调用的也是iterator接口 */
+			var str = 'hello';
+			console.log(['1', ...str, '2']);
+			
+			/* for...in for...of */
+			console.group('for...in');
+			var arr = ['a', 'b', 'c'];
+			arr.foo = 'd';
+			for(let i in arr) {      
+			    console.log(i)       //for...in 会遍历所有属性名称
+			}
+			console.groupEnd();
+			console.group('for...of')
+			for(let item of arr) {
+			    console.log(item)    //for...of 只会遍历数字属性的值
+			}
+			console.groupEnd();
+			
+			/* set、map的遍历*/
+			console.group('set、map的遍历');
+			var set = new Set(['value1', 'value2']);
+			var map = new Map().set('key1', 'value1').set('key2', 'value2');
+			for (let item of set) {
+			    console.log(item)
+			}
+			for (let [key, value] of map) {
+			    console.log(key, value);
+			}
+			
+			/* 后记
+			 * forEach循环，中途无法使用break或return跳出！！
+			 * for...of循环，只能用于实现了iterator的对象中（一般用于遍历类数组map、set），如果想用来遍历普通对象，则要自己添加Symbol.iterator属性
+			 * for...in循环，是为了遍历对象而设计的，遍历属性名称，
+			 */
+			
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

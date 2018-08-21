@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="js/vue.js"></script>
+		<title>test component prop</title>
+		<style>
+			p {
+				font-weight: bold ;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app">
+			<p>拆解v-model语法糖</p>
+			<span>{{value}}</span>
+			<input v-bind:value="value" v-on:input="updateValue($event.target.value)"/>
+			<p>在组件中自定义v-model, 类似于.sync语法糖，核心在于子组件要将数据放在事件内并触发，所以price的值来自于：$event.target.value</p>
+			<currency-input v-model="price"></currency-input>
+		</div>
+		<script>
+			Vue.component('currency-input',{
+				props: ['value'],
+				template: '\
+					<span>$\
+					<input\
+						ref="input"\
+						:value="value"\
+						@input="updateValue($event.target.value)"\
+					></span>\
+				',
+				methods: {
+					updateValue: function(value) {
+						var formattedValue = value
+							.trim()
+							.slice(
+							  0,
+							  value.indexOf('.') === -1
+							  ? value.length 
+							  : value.indexOf('.') + 3
+							)
+						if(formattedValue !== value) {
+							this.$refs.input.value = formattedValue	
+						}
+						this.$emit('input', Number(formattedValue))
+					}
+				}
+			})
+			var vm = new Vue({
+				el: "#app",
+				data:{
+					value:'hello',
+					price:''
+				},
+				methods: {
+					updateValue: function(value) {
+						this.value = value;
+					}
+				}
+			})
+
+		</script>
+	</body>
+</html>

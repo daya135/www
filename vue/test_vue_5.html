@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="js/vue.js"></script>
+		<script type="text/javascript" src="https://unpkg.com/vue-router@3.0.1/dist/vue-router.js"></script>
+		<title>testVue router</title>
+	</head>
+	<body>
+		<div id="app">
+		<p>
+			<!-- 使用 router-link 组件来导航. -->
+    		<!-- 通过传入 `to` 属性指定链接. -->
+    		<!-- <router-link> 默认会被渲染成一个 `<a>` 标签 -->
+			<router-link to="/foo">Go to foo</router-link>
+			<router-link to="/bar">Go to bar</router-link>
+		</p>
+		<!-- 路由出口 -->
+  		<!-- 路由匹配到的组件将渲染在这里 -->
+		<router-view></router-view>
+		</div>
+	</body>
+	<script>
+		const Foo = {template: '<div>foo</div>'}
+		const Bar = {template: '<div>bar</div>'}
+		const routes = [
+			{path: '/foo', component: Foo},
+			{path: '/bar', component: Bar}
+		]
+		const router = new VueRouter({
+			routes: routes
+		})
+		const app = new Vue({
+			router
+		}).$mount('#app') //手动挂载实例，补充el选项
+	</script>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>test img</title>
+		<script src="../js/vue.js"></script>
+		<style>
+		    .divclass {
+		        margin:0 auto; 
+		        overflow: scroll;
+		        /*overflow: hidden;*/
+		        border: 1px solid #000000;
+		        position: relative;
+		    }
+		    .imgclass {
+		        /*width: 1000px;
+		        height: 1000px;*/
+		        position: absolute;
+		    }
+		</style>
+		
+	</head>
+	<body>
+	    <div id="app">
+        	    <div class= "divclass" ref="scrollDiv" :style="{height:divHeight+'px', width:divWidth+'px'}" @scroll="scroll()">
+        	        <img id="imgid" src="../img/ChinaMap.jpeg" class="imgclass" :style="{height:imgHeight+'px', width:imgWidth+'px', left:imgLeft+'px', top:imgTop+'px'}"/>
+        	    </div>
+        	    <button @click="top()">top</button>
+        	    <button @click="left()">right</button>
+        	    <button @click="pinch(2)">pinchup</button>
+        	    <button @click="pinch(0.5)">pinchdown</button>
+	    </div>
+	    <script>
+	        var vm = new Vue({
+	            el: "#app",
+	           data: {
+	               divWidth: 500,
+	               divHeight: 500,
+	               imgLeft: 0,
+	               imgTop: 0,
+	               imgWidth: 1000,
+	               imgHeight: 1000,
+	               totalPinch: 1,
+	               scrollHisX:0,
+	               scrollHisY:0
+	           },
+	           mounted() {
+	              var scrollDiv = document.getElementById('scrollDiv');
+                  scrollDiv.scrollTop = (this.imgHeight - this.divHeight)/2; 
+                  scrollDiv.scrollLeft = (this.imgWidth - this.divWidth)/2; 
+	           },
+	           updated() {
+	                console.log('updated，当图片的大小被重新渲染后才能设置sroll属性, 否则sroll将设置为图片渲染前所能达到的最大值')
+	                var scrollX = this.imgWidth * this.scrollHisX - this.divWidth / 2
+                    var scrollY = this.imgHeight * this.scrollHisY - this.divHeight /2
+                    this.$refs.scrollDiv.scrollLeft = scrollX
+                    this.$refs.scrollDiv.scrollTop = scrollY
+                    console.log('pinch scroll: ', scrollX, scrollY,  this.$refs.scrollDiv.scrollLeft, this.$refs.scrollDiv.scrollTop)
+	           },
+	           methods: {
+	               scroll: function(evt) {
+	                   this.scrollHisX = (this.$refs.scrollDiv.scrollLeft + this.divWidth / 2) / this.imgWidth;
+	                   this.scrollHisY = (this.$refs.scrollDiv.scrollTop + this.divHeight / 2) / this.imgHeight;
+	                   console.log("scroll: ", this.$refs.scrollDiv.scrollLeft, this.$refs.scrollDiv.scrollTop);
+	               },
+	               top: function(){
+	                  if (parseInt(this.imgTop) < 0 ) {
+	                    this.imgTop = this.imgTop + 50
+	                  }
+	               },
+	               left: function(){
+	                  if (parseInt(this.imgLeft) < 0 ) {
+	                     this.imgLeft = this.imgLeft + 50
+	                  }
+	               },
+	               pinch: function(p) {
+	                   if ((this.totalPinch * p) <= 4 && (this.totalPinch * p) >= 0.5) {
+	                        this.totalPinch  = this.totalPinch * p;
+	                        this.imgWidth = this.imgWidth * p
+                            this.imgHeight = this.imgHeight * p
+                            
+	                   } else {
+	                       console.log('已经到放大缩小极限', this.totalPinch);
+	                   }
+//	                   console.log(this.imgWidth, this.imgHeight)
+	               }
+	           }
+//	           watch: {
+//	               imgWidth: function(newVAL) {
+//	                   console.log("this.imgWidth, ", this.imgWidth)
+//                     this.$refs.scrollDiv.scrollLeft = (newVAL - this.divWidth) / 2
+//                     console.log('this.$refs.scrollDiv.scrollLeft: ', this.$refs.scrollDiv.scrollLeft, (newVAL - this.divWidth) / 2);
+//                          
+//	               }, 
+//	               imgHeight: function(newVAL) {
+//	                   console.log("this.imgHeight, ", this.imgHeight)
+//	                   this.$refs.scrollDiv.scrollTop = (newVAL - this.divHeight) / 2
+//	                   console.log('this.$refs.scrollDiv.scrollTop: ', this.$refs.scrollDiv.scrollTop, (newVAL - this.divHeight) / 2);
+//	               }
+//	           }
+	        });
+	    </script>
+           
+	</body>
+</html>

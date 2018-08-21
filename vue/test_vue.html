@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="../js/vue.js"></script>
+		<title>test vue</title>
+		<style>
+			.class1{
+			  background: #444;
+			  color: #eee;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="app">
+			<h3>文本	, v-html:</h3>
+			<div v-html="test_html"><h4>test_html:</h4></div> <!--v-html 指令用于输出 html代码, 子元素被覆盖-->
+			<p>双大括号被解释为普通文本: {{test_html}}</p><!--直接插入文本-->
+			<p>details: {{details()}}</p>
+			<input v-model="message" /> 
+			<button onclick="changeData()">动态改变数据</button></br>
+			<input v-model="'sss'" />
+			<hr />
+			<h3>表达式, 只支持单个js表达式，但可以通过调用method变通实现复杂场景：</h3>
+			<p>不能通过表达式获取用户定义的全局变量:{{data}}</p>
+			<p>当然js的内定全局变量在白名单内：{{Math.random()}}</p>
+			<p>{{5+5}}</p>	
+			<p>OK: {{ok ? 'YES' : 'NO' }}</p>
+			<p>直接通过表达式反转字符串：{{message.split('').reverse().join('')}}</p>
+			<p>通过方法反转字符串：{{ reversedMessage1() }}</p>
+			<p>通过计算反转字符串: {{ reversedMessage2 }}</p>
+			<p style="color: gray;">computed是基于它的依赖缓存，只有相关依赖发生改变时才会重新取值，性能较好。methods 在重新渲染的时候，函数总会重新调用执行。</p>
+    		<p>Data.now()不是响应式依赖，意味着它将不会被更新：{{now}}</p>
+			<hr />
+			<h3>指令：</h3>
+			<p v-bind:id="'div-' + id">这个p元素的id={{'div-' + id}}</p>
+			<label for="r1">修改颜色</label><input type="checkbox" v-model="class1" id="r1">
+		    <br><br>
+		    <div v-bind:class="{'class1': class1}">
+		    	directiva v-bind:class
+		    </div>
+			<pre><a v-bind:href="url" v-bind:target="target">test_vue</a></pre>
+			<button v-on:click="reversedMessage">通过v-on:click指定method反转message</button>
+			
+			<hr />
+			<h3>过滤器被指令调用和表达式调用的两种写法；测试过滤器参数；测试v-bind、v-on的简写：</h3>
+			<label>将message转大写： </label><span :id="message | captialize">{{ message | captialize("this is arg") }}</span><br>
+			<button @click="reversedMessage">通过@click指定method反转message</button>
+			<hr />
+			<h3>条件指令：</h3>
+			<p v-show="ok">v-if与v-show的区别：一个是条件渲染，一个是初始渲染并基于CSS控制</p>
+			<template v-if="ok">
+		      <p>将template用于分组渲染，template标签本身不被渲染</p>
+		      <p v-if="type === 'p'">v-if="type === 'p'</p>
+		      <h3 v-else-if="type === 'h3'">v-else-if="type === 'h3'</h3>
+		      <div v-if="Num > 0.5">
+      			随机数为 {{ Num}} 大于0.5
+    		  </div>
+    		  <div v-else>
+     			随机数为 {{ Num}} 小于或等于 0.5
+    		  </div>
+		    </template>
+		    <p>
+		    <template v-if="loginType == 'username'">
+		    	<label>Username</label>
+  				<input placeholder="Enter your username">
+  				<button @click="toggleLoginTpye">Toggle login type</button>
+		    </template>
+		    <template v-else-if="loginType == 'email'">
+		    	<label>email</label>
+  				<input placeholder="Enter your email">
+  				<button @click="toggleLoginTpye">Toggle login type</button>
+		    </template>
+		    <span style="color: gray;">因为两个模板使用了相同的元素，input元素不会被替换掉——仅仅是替换了它的 placeholder</span>
+		    </p>
+		    <p>
+		    <template v-if="loginType == 'username'">
+		    	<label>Username</label>
+  				<input placeholder="Enter your username" key="username-input">
+  				<button @click="toggleLoginTpye">Toggle login type</button>
+		    </template>
+		    <template v-else-if="loginType == 'email'">
+		    	<label>email</label>
+  				<input placeholder="Enter your email" key="email-input">
+  				<button @click="toggleLoginTpye">Toggle login type</button>
+		    </template>
+		    <span style="color: gray;">为input定义key值，每次切换时，输入框都将被重新渲染</span>
+		    </p>
+			<hr />
+			<h3>循环指令，可以迭代数组、对象、整数：</h3>
+			<ol>
+				<li v-for="site in sites">{{site.name}}</li>
+			</ol>
+			<p v-for="(value, key, index) in person">{{key}}.{{value}}:{{index}}</p>
+			<hr />
+		</div>
+		<hr />
+		<div>
+			{{5+5}}<br />
+			{{ok ? 'YES' : 'NO' }}<br/>
+		</div>
+		<hr />
+		
+	</body>
+	<script>
+		var data = {
+				seachItems: ['A111', 'A222', 'A333'],
+				sites: [
+			      { name: 'Runoob' },
+			      { name: 'Google' },
+			      { name: 'Taobao' }
+			    ],
+			    person: {
+			    	name: 'jzz',
+			    	age: 100
+			    },
+				test_html: '<h4>test_vue.com<h4>',
+				message: 'hello world',
+				alexa: "10000",
+				class1: false,
+				id: 1,
+				ok: true,
+				type: 'p',
+				Num:Math.random(),
+				url: 'http://127.0.0.1:8020/myCordova/www/test_vue.html',
+				target: '_blank',
+				loginType: 'username'
+		};
+		var vm = new Vue({
+			el: '#app',
+			data: data,
+			methods: {
+				details: function() {
+					return "this.message：" + this.message;
+				},	
+				reversedMessage: function () {
+      				this.message = this.message.split('').reverse().join('')
+    			},
+				reversedMessage1: function () {
+      				return this.message.split('').reverse().join('')
+    			},
+				toggleLoginTpye: function () {
+					if (this.loginType == 'username') {
+						this.loginType = 'email'
+					} else {
+						this.loginType = 'username'
+					}
+				}
+			},
+			computed: {
+			    // 计算属性的 getter
+			    reversedMessage2: function () {
+			      // `this` 指向 vm 实例
+			    	return this.message.split('').reverse().join('')
+			    },
+			    testcomputed: {
+			    	get: function () {
+				        console.log("get被调用, this.message=", this.message);
+				    },
+				    set: function (arg) {
+				        console.log("set被调用, arg=" + arg);
+				    }
+			    },
+			    now: function () {
+			    	return Date.now()
+			    }
+  
+ 			},
+			filters: {
+				captialize: function(value, arg) {
+					console.log("revice arg：" + arg);
+					if (!value) return '';
+					value = value.toString();
+					//首字母转大写
+					return value.charAt(0).toUpperCase() + value.slice(1);
+				}
+			}
+		})
+		function changeData(){
+			data.message = "change message value";	
+		}
+		document.write("<h3>测试vue的特有属性，使用“$”前缀 </h3>");
+		document.write(vm.$data === data) // true
+		document.write("<br>") // true
+		document.write(vm.$el === document.getElementById('app')) // true
+		document.write("<hr />");
+		
+		vm.testcomputed = "改变computed的值";
+		
+		function a_onclick() {
+			alert('点击事件');
+		}
+	</script>
+</html>

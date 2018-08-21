@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="../js/vue.js"></script>
+		<title>vue common test</title>
+	</head>
+	<body>
+		<div id="app">
+			<ul>
+				<li v-for="Item in DownloadItems">
+					<div>
+						<label>{{Item.airportName}}</label>
+						<div v-if="Item.downloadFlag">
+							<button class=" ThemeClass" @click="liCLick(Item)">download</button>
+						</div>
+						<div v-else>
+							<button class=" ThemeClass" @click="liCLick(Item)">remove</button>
+						</div>
+					</div>
+				</li>
+			</ul>
+		</div>
+		<script>
+			var vm = new Vue({
+				el: '#app',
+				data: {
+					DownloadItems: [
+						{airportName: '荷花机场', downloadFlag: 'true'},
+						{airportName: '首都机场', downloadFlag: 'false'}
+					]
+				}, 
+				methods: {
+					liCLick: function(item) {
+						//var obj = event.target.getAttribute("aaa");
+						var obj = item;
+						console.log(JSON.stringify(obj));
+						console.log(item.downloadFlag.toLocaleString())
+						item.downloadFlag = !item.downloadFlag;
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

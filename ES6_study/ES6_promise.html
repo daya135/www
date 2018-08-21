@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>test promise</title>
+		<script src="../js/jquery-1.11.1.min.js"></script>
+		<script>
+			let p = new Promise(function(resolve, reject) {
+				$.ajax({
+					type:"get",
+					url:"ES6_promise.html",
+					async:true,
+					success(data) {
+						resolve(data);
+					},
+					error(err){
+						reject(err);
+					}
+				})
+			});
+			
+			p.then(data => {console.log('sucess\n', data)},  err => {console.log('err\n', err)})
+			
+			/* Promise.all() */
+			function createPromise(url) {
+				return new Promise(function(resolve, reject) {
+					$.ajax({
+						type:"get",
+						url, //json键值对相同时可以省略
+						async:true,
+						success(data) {
+							resolve(data);
+						},
+						error(err){
+							reject(err);
+						}
+					})
+				})
+			}
+			
+			Promise.all([
+				createPromise('testData/arr.txt'),
+				createPromise('testData/Json.txt')
+			]).then(arr => {
+				let [arrdata, jsondata] = arr;
+				console.log('arr', arrdata);
+				console.log('json', jsondata);
+			}, err => {console.log('至少有一个报错了\n', err)})
+			
+			
+			/* Promise.all() 实际上jquery的ajax已经封好了就是一个promise对象*/
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

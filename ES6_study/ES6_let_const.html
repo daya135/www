@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<script>
+			window.onload = function(){
+				var inputs = document.getElementsByTagName("input");
+				for(var i = 0; i < inputs.length; i ++) {
+					inputs[i].onclick = function(){
+						alert(i); //所有i都指向同一份内存地址，所以最后结果都是3
+					}
+				}
+
+//				for(var i = 0; i < inputs.length; i ++) {
+//					//立即执行函数(IIFE)，形成闭包，解决上面的问题
+//					(function(i){ //函数形参的i是新的地址·
+//						inputs[i].onclick = function(){
+//							alert(i); 
+//						}
+//					})(i) 
+//
+//				}				
+				
+				var bts = document.getElementsByTagName("button");
+				for(let i = 0; i < bts.length; i ++) {
+					bts[i].onclick = function(){
+						alert(i); //let复制了i值，每次循环的i都是一份新的变量
+					}
+				}
+			}
+
+		</script>
+	</head>
+	<body>
+		<input type="button" value="button1"/>
+		<input type="button" value="button2"/>
+		<input type="button" value="button3"/>
+		<br />
+		<button>button4</button>
+		<button>button5</button>
+		<button>button6</button>
+	</body>
+</html>
