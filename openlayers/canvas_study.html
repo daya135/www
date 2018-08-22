@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>canvas study</title>
+        <script src="../js/ol.js"></script>
+        <script src="../js/jquery-1.11.1.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="../css/ol.css" />
+    </head>
+
+    <body onload="draw()">
+        <canvas id="canvas"></canvas>
+        <script>
+            function draw() {
+                var canvas = document.getElementById('canvas');
+                if(canvas.getContext) {
+                    var ctx = canvas.getContext('2d');
+                    canvas.width = 1000;
+                    canvas.height = 1000;
+                    var img = new Image();
+                    img.src = '../img/icon/shanqu.png';
+                    img.onload = function() {
+//                     ctx.rotate(Math.PI * 30 /180);
+                       ctx.drawImage(img, 450, 450, 100, 100);
+                    }
+                }
+            }
+        </script>
+    </body>
+
+</html>
