@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <title></title>
+        <link rel="stylesheet" type="text/css" href="../css/ol.css" />
+        <link href="favicon.ico" mce_href="favicon.ico" rel="icon" type="image/x-icon" />
+        <style type="text/css">
+            body,
+            #mainMap {
+                border: 0px;
+                margin: 0px;
+                padding: 0px;
+                width: 100%;
+                height: 100%;
+                font-size: 13px;
+            }
+        </style>
+        <script type="text/javascript" src="../js/ol.js"></script>
+    </head>
+
+    <body>
+        <div id="mainMap"></div>
+    </body>
+
+</html>
+<script type="text/javascript">
+    // 自定义分辨率和瓦片坐标系
+    let resolutions = [];
+    let maxZoom = 5;
+
+    // 计算分辨率，废弃
+    for(let i = 0; i <= maxZoom; i++) {
+        resolutions[i] = Math.pow(2, maxZoom - i);
+    }
+    let tilegrid = new ol.tilegrid.TileGrid({
+        origin: [0, 0],
+        resolutions: resolutions // 设置分辨率
+    });
+
+    let TileLayers = new ol.layer.Tile({
+        source: new ol.source.TileImage({
+            projection: 'EPSG:3857',
+            //      tileGrid: tilegrid,     //加上后会卡死！！
+            //谷歌地图的算法
+            tileUrlFunction: function(tileCoord, pixelRatio, proj) {
+                var z = tileCoord[0];
+                var x = tileCoord[1];
+                var y = tileCoord[2];
+  
+                y = Math.abs(y) - 1;
+                console.log(x, y, z);
+                return "terrain/" + z + "/" + x + "/" + y + ".jpg";
+            }
+            //geowebcatche的算法，还存在问题，只能显示一半
+//          tileUrlFunction: function(xyz, obj1, obj2) {
+//              if(!xyz)
+//                  return "";
+//              let z = xyz[0];
+//              let x = Math.abs(xyz[1]);
+//              let y = Math.abs(xyz[2]);
+//              let xyz_convert = convert_(z, x, y);
+//              x = xyz_convert[0];
+//              y = xyz_convert[1];
+//              z = xyz_convert[2];
+//              let shift = z / 2;
+//              let half = 2 << shift;
+//              let digits = 1;
+//              if(half > 10)
+//                  digits = parseInt(Math.log(half) / Math.log(10)) + 1;
+//              let halfx = parseInt(x / half);
+//              let halfy = parseInt(y / half);
+//              x = parseInt(x);
+//              y = parseInt(y) + 1;
+//              let url = "ChangBei/EPSG_4326" + "_" + padLeft_(2, z) + "/" + padLeft_(digits, halfx) + "_" + padLeft_(digits, halfy) + "/" + padLeft_(2 * digits, x) + "_" + padLeft_(2 * digits, y) + ".jpeg";
+//              return url;
+//          }
+        })
+    });
+
+    // 创建地图
+    let map = new ol.Map({
+        layers: [
+            TileLayers,
+            //          new ol.layer.Tile({source: new ol.source.OSM()}),
+        ],
+        view: new ol.View({
+            center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
+            zoom: 1,
+            //          rotation: 1
+        }),
+        target: 'mainMap'
+    });
+
+    //按位补0
+    function zeroFill(num, len, radix) {
+        let str = num.toString(radix || 10);
+        while(str.length < len) {
+            str = "0" + str;
+        }
+        return str;
+    }
+    let padLeft_ = function(num, val) {
+        return(new Array(num).join('0') + val).slice(-num);
+    };
+    //xy行列转换
+    let convert_ = function(zoomLevel, x, y) {
+        let extent = Math.pow(2, zoomLevel);
+        //              if(x < 0 || x > extent - 1) {
+        //                  console.log("The X coordinate is not sane: " + x);
+        //                  return;
+        //              }
+        //              if(y < 0 || y > extent - 1) {
+        //                  console.log("The Y coordinate is not sane: " + y);
+        //                  return;
+        //              }
+        let gridLoc = [x, extent - y - 1, zoomLevel];
+        return gridLoc;
+    }
+</script>
