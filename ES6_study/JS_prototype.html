@@ -46,7 +46,7 @@
             console.log(typeof(Person)); //'function'  typeof返回的一定是个字符串
             console.log(typeof(person)); //'object' 注意这里，足以显示出typeof的局限性，不能返回具体的类型
 
-            /* 关于原型链的经典演示！*/
+            console.group('/* 关于原型链的经典演示！*/')
             function a(name) {
                 this.name = name;
             }
@@ -58,14 +58,17 @@
 
             var t = new b();
             t.test();
+            
             // t._proto_ == b.prototype == new a('test')
             // t._proto_._proto_ == b.prototype._proto_ == new a('test')._proto_ == a.prototype
             // 所以先找t自身即new b()对象是否有test属性，b.prototype即new a('test')对象， 再找a.prototype对象，这就是原型链！
-
+            
             console.log(new b().constructor) //可以看出使用new新建出来的对象的constructor已经改变了，即new b().constructor = a.prototype.constructor
             console.log(new a().constructor)
+            console.log(a.__proto__);
+            console.groupEnd();
 
-            /* 深入理解function在作为普通对象和作为类两种身份时，不同调用方式和this的关系  */
+            console.group('/* 深入理解function在作为普通对象和作为类两种身份时，不同调用方式和this的关系  */')
             var dom = function(name) {
                 this.name = name;
                 console.log('调用dom方法：', this) //直接调用时this指向window对象；通过new调用时this指向domObj
@@ -84,6 +87,9 @@
             dom('window');      //直接调用function本身
             console.log('window.name', name);
 //          d.Show(); //error， 不能通过实例名调用静态方法
+            console.groupEnd();
+
+            
         </script>
     </head>
 

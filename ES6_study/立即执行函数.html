@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>立即执行函数</title>
+	</head>
+	<body>
+	    <script>
+	    /* 立即执行函数，定义形式：(function(){})() */
+        //定义工具类
+        var tool = (
+            function () {
+                function _(){}
+                _.test = function() {
+                    console.log("复杂定义");
+                }
+                return _;
+            }
+        )();
+        
+        tool.test(); //调用
+        
+        
+        
+    </script>    
+	</body>
+</html>

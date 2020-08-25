@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">  
+    <title>test</title>
+  </head>
+  <body>
+    <form id="login">
+        <input id="name" value="aaa"/>
+    </form>
+    <script>
+        let a = ()=>{
+            return new Promise((resolve, reject)=>{
+                setTimeout(()=>{
+                    console.log("第1个promise完成");
+                    console.log(new Date());
+                    resolve();
+                }, 1000)
+            })
+        }
+        let b = ()=>{
+            return new Promise((resolve, reject)=>{
+                setTimeout(()=>{
+                    console.log("第2个promise完成");
+                    console.log(new Date());
+                    resolve();
+                }, 3000)
+            })
+        }
+        let c = ()=>{
+            return new Promise((resolve, reject)=>{
+                setTimeout(()=>{
+                    console.log("第3个promise完成");
+                    console.log(new Date());
+                    resolve();
+                }, 1000)
+            })
+        }
+        
+        let taskArr = [a, b, c];
+
+        //原始写法, 若promise对象太多或者是动态创建的，则无法适应需求
+//      a().then(b).then(c);
+        
+        //比较高大上的写法，自动组织promise链条
+        function queue(tasks) {
+            let sequence = Promise.resolve();
+            tasks.forEach((task)=>{
+                sequence = sequence.then(task);
+            })
+            return sequence;
+        }
+//      queue(taskArr).then(()=>{console.log('task over')})
+        
+        //async，await 高大上的写法！
+        let queue2 = async (tasks) =>{
+            let res = null; //唯恐
+            for (let task of tasks) {
+                res = await task(res);
+            }
+            return await res;
+        }
+        queue2(taskArr).then(()=>{console.log('task over')}, (err)=>{console.log('task err')})
+
+        //自动创建任务并构建promise同步队列
+        let list = [1000, 3000, 2000];
+        function dynamicQueue(list) {
+            let result = ""; //多个任务共同修改此参数
+            let sequence = Promise.resolve();
+            list.forEach((item)=>{
+                let task = ()=>{
+                    return new Promise((rs, rj)=>{
+                         setTimeout(()=>{
+                            console.log(result);
+                            console.log("任务完成, 参数:", item, new Date());
+                            result = item + "任务到此一游";
+                            rs();
+                        }, item)
+                    })
+                }
+                sequence = sequence.then(task);
+            })
+        }
+//      dynamicQueue(list);
+        
+        
+        
+    </script>    
+    
+  </body>
+</html>

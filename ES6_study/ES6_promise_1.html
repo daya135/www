@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>test promise</title>
+		<script src="../js/jquery-1.11.1.min.js"></script>
+		<script>
+		    let resolveFunc = (parm) => new Promise((resolve, reject)=>{
+                console.log('resolve:', parm)
+                if (parm){
+                    resolve(parm);
+                } else {
+                    resolve();
+                }
+            });
+            
+            let rejectFunc = (parm) => new Promise((resolve, reject)=>{
+                console.log('reject:', parm)
+                if (parm){
+                    reject(parm);
+                } else {
+                    reject();
+                }
+            });
+		    
+			function createPromise(url) {
+				return new Promise(function(resolve, reject) {
+					$.ajax({
+						type:"get",
+						url, //json键值对相同时可以省略
+						async:true,
+						success(data) {
+							resolve(data);
+						},
+						error(err){
+							reject(err);
+						}
+					})
+				})
+			}
+			
+//			Promise.all([
+//				createPromise('testData/arr.txt'),
+//				createPromise('testData/Json.txt')
+//			]).then(arr => {
+//				let [arrdata, jsondata] = arr; // promise.all的返回值为一个数组
+//				console.log('arr', arrdata);
+//				console.log('json', jsondata);
+//			}, err => {console.log('至少有一个报错了\n', err)})
+			
+			/* 演示数组与顺序执行相结合的方式，控制多个异步函数并发与顺序执行 */
+			
+			function test(resolve, reject, i) {
+			    console.log(i + '  ' + new Date());
+			    let func1 = () => {
+			        let p = new Promise((resolve1, reject1) => {
+			            setTimeout(()=>{resolve1()}, i * 2000);
+			        });
+			        return p;
+			    }
+			    let func2 = () => {
+                    let p = new Promise((resolve2, reject2) => {
+                        setTimeout(()=>{resolve2()}, i * 2000);
+                    });
+                    return p;
+                }
+                
+                func1().then(func2).then(()=>{
+                    console.log(i + ' 执行完了 ' + new Date());
+                    resolve(i)
+                }).catch((err)=>reject(err))
+			}
+			
+			function runPromises(parm) {
+			    let promises = new Array();
+			    console.log('createPromises开始执行' + new Date() + ' ' + parm);
+			    for (let i = 1; i <= 2; i ++) {
+			        promises.push(new Promise((resolve, reject)=>{
+			            test(resolve, reject, i);
+			        }))
+			    }
+			    return Promise.all(promises);
+			}
+			
+			let main3 = ()=>{
+    			     //Promise.all的返回值也是一个Promise对象，所以后面可以继续跟.then
+        			resolveFunc().then(
+//			        runPromises
+        			    (parm)=>Promise.all([])  //空的也能运行
+//			        (err)=>console.log('startfunc报错了', err)   //这个只代表上一步的reject状态，这句执行后下面的.then会继续执行
+        			).then(
+        			    (arr)=>console.log('Promise.all返回值', arr)    //这句话不管上一步会不会执行都能运行！？？
+        			).catch(
+        			    (err)=>console.log('链式执行出错', err)    //加上catch，并且各个.then中不定义reject状态的处理方法，则可以进入到这里从而中断链式调用
+        			)
+			}
+//			main3();
+            
+            /*onFulfilled(value)和onRejected(reason)：参数value和reason的实参都是PromiseValue。
+             * 这里有一点值得注意，如果onFulfilled(value)和onRejected(reason)这两个回调函数中return返回值不是一个Promise的对象，
+             * 那么这个返回值会被赋给PromiseValue，并在下一个then()的onFulfilled(value)和onRejected(reason)中做为实参使用。
+             * 但如果这个返回值是一个Promise的对象，那么剩下的由then()构造的回调链会转交给新的Promise对象并完成调用。
+            */
+//         .then()的源码如下:
+//         this.then = function (onFulfilled, onRejected) {
+//            var self = this;
+//            return new Promise(function (resolve, reject) {
+//              return self.done(function (result) {
+//                if (typeof onFulfilled === 'function') {
+//                  try {
+//                    return resolve(onFulfilled(result));
+//                  } catch (ex) {
+//                    return reject(ex);
+//                  }
+//                } else {
+//                  return resolve(result);
+//                }
+//              }, function (error) {   
+//                if (typeof onRejected === 'function') {
+//                  try {
+//                    return resolve(onRejected(error)); //在.then(onFulfilled, onRejected)方法中，若reject执行没有失败则后续的then会进入resolve
+//                  } catch (ex) {
+//                    return reject(ex);
+//                  }
+//                } else {
+//                  return reject(error);
+//                }
+//              });
+//            });
+//          }
+//          console.group('测试promise.then');
+//          Promise.all([]).then((data)=>{
+//              console.log('第1个.then', data);
+//              return 'first return';  //自动作为第二个onFulfilled方法的入参
+//          }).then((data)=>{
+//              console.log('第2个.then', data);//不需要返回的promise也能得到上一个返回值
+//          }) 
+
+            
+			 
+			let asyncFuc = (parm) => new Promise((resolve, reject)=>{
+			    console.log('asyncFuc执行', parm);
+			    if(typeof parm == 'object'){
+			        parm = parm.code;
+			    }
+                setTimeout(()=>{
+                    if (parm == 200) {
+                        console.log()
+                        resolve({code:200})
+                    } else {
+                        reject({code:404})
+                    }
+                }, 2000)
+            })
+			let outPromise = (parm)=> {
+			    console.log('outPromise: ' +  parm);
+			    asyncFuc(parm).then(
+			        data=>data, 
+			        err=>err         //这个地方因为执行没有报错，会使得下一步继续执行resolve
+			    ).then(
+			        success=>console.log('outPromise只会算执行成功:' , success),
+			        error=>console.log('outPromise永远不会进到这里')
+			    );
+			}
+			let outPromise2 = (parm)=> {
+                console.log('outPromise2: ' +  parm);
+                asyncFuc(parm).then(
+                    data=>data, 
+                    err=>Promise.reject(err)         //手动返回一个被reject()的Promise对象
+                ).then(
+                    success=>console.log('outPromise2执行成功:' , success),
+                    err=>console.log('outPromise2失败了会进到这里:', err)
+                ).catch(
+                    err=>console.log('outPromise2.catch', err)  //在这里是catch不到的，参考源码，进入了reject(error)方法
+                )
+            }
+			
+			
+//			outPromise(200);
+//			outPromise(404);
+//			outPromise2(200);
+//          outPromise2(404);
+//          asyncFuc(2).then(data=>data, err=>Promise.reject(err)).catch(err=>console.log('asyncFuc(2).catch', err)) //这样可以catch到
+//          asyncFuc(3).then(data=>data).catch(err=>console.log('asyncFuc(3).catch', err)) //这样也可以catch到
+            
+            console.groupEnd();
+            
+            /* 测试“promise函数”和“包含promise函数的普通函数”串联 */
+            let func1 = (parm)=>{
+                console.log('func1 start: ', parm);
+                asyncFuc(parm).then(data=>{  //虽然.then返回了一个promise对象，但是func1确没有将其return出去！基本语法啊，晕了吧！！
+                    console.log('func1 end:', data);
+                    return data;
+                }) 
+            }
+            
+            let func2 = (parm)=>{
+                console.log('func2 start: ', parm);
+                return asyncFuc(parm).then(data=>{
+                    console.log('func2 end:', data)
+                    return data;
+                })
+            }
+            
+            let func3 = (parm)=>{
+                console.log('func3 start: ');
+                return asyncFuc(parm).then(data=>{
+                    console.log('func3 end:', data)
+                }, err=>{
+                    console.log('func3 err:', err) //这里捕获后不抛出reject就认为是成功
+                    return err
+                })
+            }
+            
+//          console.log('第一条链start')
+            resolveFunc(200).then(func1).then(data=>console.log('第一条链end', data)) //无法阻塞执行
+//          console.log('第二️条链start')
+//          resolveFunc(200).then(func2).then(data=>console.log('第二条链end', data)) //可以形成阻塞顺序执行
+            
+//          console.log('第一条链start')
+//          rejectFunc(404).then(func1).then(data=>console.log('第一条链end', data)).catch(err=>console.log('第1条链出错',err))
+//          console.log('第二️条链start')
+//          rejectFunc(404).then(func2).then(data=>console.log('第二条链end', data)).catch(err=>console.log('第2条链出错',err))
+//          console.log('第三️条链start')
+//          resolveFunc(200).then(func3).then(data=>console.log('第三条链end', data)).catch(err=>console.log('第3条链出错',err))
+//          resolveFunc(200).then(func3).then(data=>console.log('第三条链success', data), data=>console.log('第三条链err', err));
+//          rejectFunc(404).then(func3).then(data=>console.log('第三条链success', data), data=>console.log('第三条链err', err));
+//          rejectFunc(404).then(resolveFunc, rejectFunc).then(()=>{}, err=>console.log(err))
+            
+//          Promise.all([]).then(
+//              ()=>new Promise((r,s)=>setTimeout(()=>{
+//                  console.log('aaaaa')
+//                  r();
+//              }, 2000))
+//          ).then(()=>console.log('bbbbb'));
+
+            console.group('promise -> 普通函数 -> promise')
+            let pFuc = (parm) => new Promise((resolve, reject)=>{
+                console.log('pFuc start', parm, new Date())
+                setTimeout(()=>{
+                    if (parm < 404) {
+                        console.log('pFuc over', parm, new Date())
+                        resolve(parm)
+                    } else {
+                        reject(404)
+                    }
+                }, 2000)
+            })
+            let outpFunc = parm => {
+                console.log('outpFunc start', parm);
+                return pFuc(parm).then(data=> new Promise((resolve, reject)=>{
+                    console.log('outpFunc中的promise', data);
+                    resolve(data);
+                }))
+            }
+            let outpFunc2 = parm => {
+                console.log('outpFunc2 start', parm);
+                return pFuc(parm).then(data=> {
+                    console.log('outpFunc中的nomalFuc', data);
+                    if (102 == data) {
+                        return pFuc(data + 1);
+                    } else {
+                        return data;
+                    }
+                    
+                })
+            }
+            let outFuncAll = parm => {
+                console.log('outFuncAll start', parm);
+                return Promise.all([
+//                  outpFunc(201),
+//                  outpFunc(202)
+                    outpFunc2(101),
+                    outpFunc2(102),
+                ]).then(([r1, r2])=>{
+                    console.log('outFuncAll end', r1, r2);
+                    return r1 + r2
+                })
+            }
+            
+//          outpFunc(200).then(pFuc) //不能作为开头！！因为返回值没有.then方法
+//          pFuc(200).then(outFuncAll).then(pFuc)
+//          Promise.all([]).then(outpFunc).then(pFuc);
+//          pFuc(200).then(outpFunc).then(pFuc).catch(err=>{console.log(err)})
+            
+//          pFuc(200).then((data)=>{
+//              console.log('nomal func', data, new Date());
+////              return data;        //普通函数是执行完才触发后面的.then
+//              throw 'a error';    //自定义异常也能被捕获
+//          }).then(pFuc).then(
+//             ()=> console.groupEnd()
+//          ).catch((err)=>{
+//              console.log('catch err', err);
+//          })
+            
+			
+		</script>
+	</head>
+	<body>
+	</body>
+</html>

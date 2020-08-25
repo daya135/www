@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>test promise</title>
+        <script src="../js/jquery-1.11.1.min.js"></script>
+        <script>
+            let resolveFunc = (parm) => new Promise((resolve, reject)=>{
+                console.log('resolve:', parm)
+                setTimeout(()=>resolve(parm), 500);
+            });
+            
+            let rejectFunc = (parm) => new Promise((resolve, reject)=>{
+                console.log('reject:', parm)
+                if (parm){
+                    setTimeout(()=>reject(parm), 500);
+                } else {
+                    setTimeout(()=>reject(), 500);
+                }
+                //以上用不用分支没啥区别，因为PromiseStatus不依赖PromiseValue
+            });
+            
+//          rejectFunc(404).then(rejectFunc, resolveFunc).then(resolveFunc);   //若onRejected函数返回了promise对象，则调用链转交给新的promise对象
+//          rejectFunc(404).then(resolveFunc, err=>err).then(resolveFunc);  //若onRejected函数是普通函数且没有继续reject，则下一个.then进入resolveFunc方法,并且获得上一个onRejected返回值
+//          rejectFunc(404).then(resolveFunc, err=>Promise.reject(err)).then(resolveFunc);  //在普通函数中手动reject
+//          rejectFunc().then(resolveFunc, err=>console.log('err', err)).then(resolveFunc);  //PromiseValue为undefined不影响状态逻辑
+
+            /*onFulfilled(value)和onRejected(reason)：参数value和reason的实参都是PromiseValue。
+             * 这里有一点值得注意，如果onFulfilled(value)和onRejected(reason)这两个回调函数中return返回值不是一个Promise的对象，
+             * 那么这个返回值会被赋给PromiseValue，并在下一个then()的onFulfilled(value)和onRejected(reason)中做为实参使用。
+             * 但如果这个返回值是一个Promise的对象，那么剩下的由then()构造的回调链会转交给新的Promise对象并完成调用。
+            */
+//         .then()的源码如下:
+//         this.then = function (onFulfilled, onRejected) { 
+//            var self = this;
+//            return new Promise(function (resolve, reject) {  //.then的返回值仍是promise对象
+//              return self.done(function (result) {
+//                if (typeof onFulfilled === 'function') {
+//                  try {
+//                    return resolve(onFulfilled(result));
+//                  } catch (ex) {
+//                    return reject(ex);
+//                  }
+//                } else {
+//                  return resolve(result);
+//                }
+//              }, function (error) {   
+//                if (typeof onRejected === 'function') {
+//                  try {
+//                    return resolve(onRejected(error)); //在.then(onFulfilled, onRejected)方法中，若onRejected执行没有reject失败则后续的.then进入onFulfilled
+//                  } catch (ex) {
+//                    return reject(ex);
+//                  }
+//                } else {
+//                  return reject(error);
+//                }
+//              });
+//            });
+//          }
+
+/* 测试“promise函数”和“包含promise函数的普通函数”串联 */
+            let func1 = (parm)=>{
+                console.log('func1 start: ', parm);
+                resolveFunc(parm).then(data=>{  //虽然.then返回了一个promise对象，但是func1确没有将其return出去！基本语法啊，晕了吧！！
+                    console.log('func1 end:', data);
+                    return data;
+                }) 
+            }
+            
+            let func2 = (parm)=>{
+                console.log('func2 start: ', parm);
+                return resolveFunc(parm).then(data=>{
+                    console.log('func2 end:', data)
+                    return data;
+                }) 
+            }
+            
+            let func3 = (parm)=>{
+                console.log('func3 start: ');
+                return resolveFunc(parm).then(data=>{
+                    console.log('func3 end:', data)
+                }, err=>{
+                    console.log('func3 err:', err) //捕获后不抛出reject就认为是成功,反之不捕获或者捕获后手动reject都会进入onRejected状态
+                    return err
+                })
+            }
+            
+//          console.log('第一条链start')
+            resolveFunc(200).then(func1).then(data=>console.log('第一条链end', data)) //无法阻塞执行
+//          console.log('第二️条链start')
+//          resolveFunc(200).then(func2).then(data=>console.log('第二条链end', data)) //可以形成阻塞顺序执行
+            
+
+/* 
+ * ES6教程提及的关键点：
+ * Promise.prototype.catch方法是.then(null, rejection)的别名，所以返回的还是一个promise对象，能插在promise链条中间。
+ * Promise 对象的错误具有“冒泡”性质，会一直向后传递，直到被捕获为止。也就是说，错误总是会被下一个catch语句捕获。
+ * 一般来说，不要在then方法里面定义 Reject 状态的回调函数（即then的第二个参数），总是使用catch方法 。
+ * 跟传统的try/catch代码块不同的是，如果没有使用catch方法指定错误处理的回调函数，Promise 对象抛出的错误不会传递到外层代码，通俗的说法就是“Promise 会吃掉错误”。这点在调试时太关键了容易坑人！！！。
+ * */
+
+/*
+ * 思考：捕获后不抛出reject就认为是成功,这种有什么场景能用？？为啥不一并放在onFulfilled中处理
+ * 答：模块化啊，前一个promise该reject还是reject，后面接的.then不认为前一个reject为失败，那只是他自己的事，跟前一个promise的设计无关。
+ */
+
+//思考2，封装promise链为一个任务节点（以便添加到更上层的promise链），以下两种方法哪个效率更高更简单（两种写法均在实战中检验能用，但感觉第一种方法比较直观简单一些）
+/*
+let p1,p2 //promise对象
+
+let func =()=> new Promise((resolve,reject)=>{
+    do something...
+    p1.then(p2).then(()=>{
+        do something();
+        resolve();
+    },reject);
+})
+
+let func = ()=>{
+    do something...
+    return p1.then(p2).then(
+        ()=>do something()
+    );
+}
+*/
+
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
