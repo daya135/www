@@ -13,9 +13,7 @@
         <div id="map" style="width: 100%; height: 100%;"></div>
         <script>
             let projection = ol.proj.get('EPSG:4326');
-            let bounds = [20, 20, 50, 50];
-            let center = [60, 60];
-
+            let center = [115, 26];
             let source = new ol.source.Vector({
 
             });
@@ -28,31 +26,14 @@
             let view = new ol.View({
                 projection: projection,
                 center: center,
-                zoom: 2
+                zoom: 11
             });
 
             let map = new ol.Map({
                 target: 'map',
                 view: view,
-                layers: [vLayer]
+                layers: [rLayer, vLayer]
             });
-
-            //          let style = '"VarLine_20": {"Color": "#dfdfdf","LineWidth": "2em"}';
-            //          let coordinate = "99.4555857219364,179.767353662339;103.821726964981,182.778485554095;" 
-            //              + "105.327292910859,176.906778365172;100.509481884051,174.949542635531;99.4555857219364,179.767353662339";
-            //          coordinate = parseArray(coordinate);
-            //          let polygon = new ol.Feature(new ol.geom.Polygon(coordinate));
-            //          let lineStyle =   new ol.style.Style({
-            //              stroke: new ol.style.Stroke({
-            //                  color: '#dfdfdf',
-            //                  width: '2em'
-            //              }),
-            //              fill: new ol.style.Fill({
-            //                  color: '#000000'
-            //              })
-            //          });
-            //          polygon.setStyle(lineStyle);
-            //          source.addFeature(polygon);
 
             $.getJSON("test.json", (data) => {
                 let mapBound = data['MapBound'];
@@ -62,7 +43,7 @@
                 let featureJson = data['FeatureJson'];
                 let featureStyle = data['FeatureStyle'];
                 
-                view.fit(mapBound, map.getSize());
+//              view.fit(mapBound, map.getSize());
                 view.setMaxZoom(18);
                 view.setMinZoom(1);
 
@@ -92,20 +73,6 @@
                 }
             });
 
-            /* @return Array/Float  转换字符串形式坐标为数字数组
-             * @parm coordinate: String, 坐标值 */
-//          function parseArray(coordinate) {
-//              coordinate = coordinate.split(';');
-//              let tempArr = new Array();
-//              for(let temp of coordinate) {
-//                  temp = temp.split(',');
-//                  temp[0] = parseFloat(temp[0]);
-//                  temp[1] = parseFloat(temp[1]);
-//                  tempArr.push(temp);
-//              }
-//              return tempArr;
-//          }
-
             /*
              * @parm： source：ol.source； featureObj：JSON, feature对象；style: JSON, 样式
              */
@@ -113,7 +80,7 @@
                 let coordinate = featureObj['Cd']
 
                 let styleObj = function() {
-                    let FtScale = map === null ? 0.5 : map.getView().getZoom() * 0.1;
+                    let FtScale = map === null ? 0.5 : map.getView().getZoom() * 0.05;
                     return new ol.style.Style({
                         image: new ol.style.Icon({
                             src: '../img/icon/x_black.png',
@@ -146,7 +113,6 @@
             }
 
             function addLine(source, featureObj, style) {
-//              let coordinate = parseArray(featureObj['Cd']);
                 let coordinate = featureObj['Cd'];
                 let line = new ol.Feature(new ol.geom.LineString(coordinate));
                 let styles = null;
@@ -241,7 +207,7 @@
                 for(line of lines) {
                     let At = line['At'];    //备用
                     coordinate.push(line['Cd']);
-                    console.log(line['Cd'])
+//                  console.log(line['Cd'])
                 }
                 let polygon = new ol.Feature(new ol.geom.Polygon(coordinate));
                 let lineStyle = new ol.style.Style({

@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>test json</title>
+        <script src="js/ol.js"></script>
+        <script src="geomStyles.js"></script>
+        <script src="js/jquery-1.11.1.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="css/ol.css" />
+    </head>
+
+    <body>
+        <div id="map" style="width: 100%; height: 100%;"></div>
+        <script>
+//          import FeatureStyles from './geomStyles.js';
+            
+            let projection = ol.proj.get('EPSG:4326');
+            let center = [115, 26];
+            let source = new ol.source.Vector({
+
+            });
+            let vLayer = new ol.layer.Vector({
+                source: source
+            });
+            let rLayer = new ol.layer.Tile({
+                source: new ol.source.OSM()
+            });
+            let view = new ol.View({
+                projection: projection,
+                center: center,
+                zoom: 11
+            });
+
+            let map = new ol.Map({
+                target: 'map',
+                view: view,
+                layers: [vLayer]
+            });
+
+            $.getJSON("test_new.json", (data) => {
+                let mapBound = data['MapBound'];
+                let mapName = data['MapName'];
+                let maxZoom = parseInt(data['MaxZoom']);
+                let minZoom = parseInt(data['MinZoom']);
+                let featureJson = data['FeatureJson'];
+                
+//              view.fit(mapBound, map.getSize());
+                view.setMaxZoom(18);
+                view.setMinZoom(1);
+
+                for(let featureObj of featureJson) {
+                    let GBCode = featureObj['GB'];  //要素代码
+                    let featureType = featureObj['Ft']; //地理要素类型
+                    
+                    let style = undefined;
+                    if (null == GBCode || undefined == GBCode) {
+                        style = FeatureStyles["default" + featureType]; //默认样式
+                        continue;
+                    } else {
+                        style = FeatureStyles[GBCode];
+                        if (!style) {   //样式表中未定义，则使用默认样式
+                            if ("P" == featureType) {
+                                console.log(featureObj);
+                            }
+                            style = FeatureStyles["default" + featureType];  //默认样式
+                        } else {
+                            if (style['hide']) {
+                                continue;   //在style中设置标志，可忽略某元素
+                            }
+                            featureType = style["Ft"];  //使用样式中定义的类型作为要素类型
+                        }
+                    }
+                    
+                    switch(featureType) {
+                        case 'L':
+                            addLine(source, featureObj, style);
+                            break;
+                        case 'ArrowL':
+                            addArrowLine(source, featureObj, style);
+                            break;
+                        case 'RW':
+                            addRailway(source, featureObj, style);
+                            break;
+                        case 'P':
+                            addPoint(source, featureObj, style);
+                            break;
+                        case 'T':
+                            addText(source, featureObj, style);
+                            break;    
+                        case 'A':
+                            addPolygon(source, featureObj, style);
+                            break;
+                        case 'DGX':
+                            addDGX(source, featureObj, style);
+                            break;    
+                        default:
+                            break;
+                    }
+                }
+            });
+            
+            //点、图片或基本点
+            function addPoint(source, featureObj, style) {
+                let coordinate = featureObj['Cd'];
+                let styleObj;
+                if (style["Url"]) {
+                    styleObj = function() {
+                        let FtScale = map === null ? 0.2 : map.getView().getZoom() * 0.02;
+                        return new ol.style.Style({
+                            image: new ol.style.Icon({
+                                src: style["Url"],
+    //                          size: [100, 100],
+                                scale: FtScale
+                            }),
+                            zIndex: 9999
+                        });
+                    }
+                } else {    //圆点
+                    styleObj = new ol.style.Style({
+                        image: new ol.style.Circle({
+                            radius: style["rd"] ? style["rd"] : 2,
+                            fill: new ol.style.Fill({
+                                color: style["Cr"]
+                            })
+                        }),
+                        zIndex: 9999
+                    });    
+                }
+
+                let point = new ol.Feature(new ol.geom.Point(coordinate));
+                point.setStyle(styleObj);
+                source.addFeature(point);
+            }
+            //文字注记
+            function addText(source, featureObj, style) {
+                let coordinate = featureObj['Cd']
+                let styleObj = function() {
+                    let FtScale = map.getView().getZoom() > 10.5 ? 1.0 : 0; //地图缩小则不显示
+                    return new ol.style.Style({
+                        text: new ol.style.Text({
+                            text: featureObj['Fn'],
+                            scale: FtScale,
+                            textAlign: 'start'
+                        }),
+                        zIndex: 9999
+                    });
+                };
+                let point = new ol.Feature(new ol.geom.Point(coordinate));
+                point.setStyle(styleObj);
+                source.addFeature(point);
+            }
+            //铁路
+            function addRailway(source, featureObj, style) {
+                if(!style) return;
+                let coordinate = featureObj['Cd'];
+                let line1 = new ol.Feature(new ol.geom.LineString(coordinate));
+                let line2 = new ol.Feature(new ol.geom.LineString(coordinate));
+                let lineStyle1 = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: '#8A8A8A88',
+                        width: style['Lw'],
+                        lineCap: 'butt',
+                        lineDash: [7, 7]
+                    }),
+                    zIndex: 9999
+                });
+                let lineStyle2 = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                        color: '#CCCCCC88',
+                        width: style['Lw'],
+                        lineCap: 'butt',
+                        lineDash: [0, 7, 7, 0] //生成与黑线相反填充顺序的虚线
+                    }),
+                    zIndex: 9999
+                });
+                line1.setStyle(lineStyle1);
+                line2.setStyle(lineStyle2);
+                source.addFeature(line1);
+                source.addFeature(line2);
+            }
+            
+            //箭头线，线+箭头图片
+            function addArrowLine(source, featureObj, style) {
+                if(!style) return;
+                let coordinate = featureObj['Cd'];
+                let line = new ol.Feature(new ol.geom.LineString(coordinate));
+                let end = coordinate[coordinate.length - 1];
+                let start = coordinate[coordinate.length - 2];
+                let dx = end[0] - start[0];
+                let dy = end[1] - start[1];
+                let rotation = Math.atan2(dy, dx);
+                let styles = function() {
+                    let styleArr = new Array();
+                    let lineweightStyle = new ol.style.Style({
+                        stroke: new ol.style.Stroke({
+                            color: style['Cr'],
+                           width: style['Lw'],
+                        }),
+                        zIndex: 9999
+                    });
+                    let arrowStyle = new ol.style.Style({
+                        geometry: new ol.geom.Point(end),
+                        image: new ol.style.Icon({
+                            src: "icon/480316.png",
+                            scale: 0.2,
+                            rotateWithView: true,
+                            rotation: -rotation,
+//                          scale: map === null ? 0.5 : map.getView().getZoom() * 0.1
+                        }),
+                        zIndex: 9999
+                     }); 
+                     styleArr.push(lineweightStyle);
+                     styleArr.push(arrowStyle);
+                     return styleArr;
+                }
+                line.setStyle(styles);
+                source.addFeature(line);
+            }
+            
+            //普通线，宽度+颜色
+            function addLine(source, featureObj, style) {
+                if(!style) return;
+                let coordinate = featureObj['Cd'];
+                let line = new ol.Feature(new ol.geom.LineString(coordinate));
+                let styles = new ol.style.Style({
+                    stroke: new ol.style.Stroke({
+                            color: style['Cr'],
+                            width: style['Lw'],
+                        }),
+                    zIndex: 9999
+                });
+                line.setStyle(styles);
+                source.addFeature(line);
+            }
+            
+            //面，包括边框和填充
+            function addPolygon(source, featureObj, style) {
+                let lines = featureObj['Ls'];
+                if (!lines) {
+                    return;
+                }
+                let coordinate = new Array();
+                for(line of lines) {
+                    coordinate.push(line['Cd']);
+                }
+                let polygon = new ol.Feature(new ol.geom.Polygon(coordinate));
+                
+                let stroke;
+                if (style['Cr'] && style['Lw']) {
+                    stroke = new ol.style.Stroke({
+                        color: style['Cr'],
+                        width: style['Lw']
+                    })
+                }
+                let fillColor = style['Fc'];    //面填充色
+                let ELEV = featureObj['ELEV'];
+                if (ELEV != undefined) {    //等高面填充
+                    ELEV = parseInt(ELEV);
+                    if (ELEV < 200) {
+                        fillColor = '#FFF68F';
+                    } else if (ELEV == 200){
+                        fillColor = '#F0D5B8';
+                    } else if (ELEV == 600){
+                        fillColor = '#F9b07A';
+                    }
+                }
+                
+                let lineStyle = new ol.style.Style({
+                    stroke: stroke,
+                    fill: new ol.style.Fill({
+                        color: fillColor
+                    }),
+                    zIndex:ELEV
+                });
+                
+                polygon.setStyle(lineStyle);
+                source.addFeature(polygon);
+            }
+            
+        </script>
+    </body>
+
+</html>

@@ -7,12 +7,14 @@
         <script src="../js/ol.js"></script>
         <script src="../js/jquery-1.11.1.min.js"></script>
         <link rel="stylesheet" type="text/css" href="../css/ol.css" />
+        
     </head>
 
     <body>
         <div id="map" style="width: 100%; height:100%;">
             <!--<canvas id="myCanvas" width="200" height="100" style="border:1px solid #000000;"></canvas>-->
         </div>
+        <script src="./testCanvas.js"></script>
         <script>
             let vLayer = new ol.layer.Vector({
                 source: new ol.source.Vector({})
@@ -25,35 +27,51 @@
                 ],
                 view: new ol.View({
                     projection: ol.proj.get('EPSG:4326'),
-                    center: [112, 40],
-                    zoom: 4
+                    center: [110, 40],
+                    zoom: 6
                 })
             });
             
-            let lineCd = [[110, 40], [115, 40]];
+//          let reportLine = [
+//              [100, 50], [105, 50], [110, 50], [115, 45], [120, 40], [120, 35],
+//              [120, 30], [115, 25], [110, 20], [105, 20], [100, 20], [95, 25], 
+//              [90, 30], [90, 35], [90, 40], [95, 45], [100, 50]
+//          ];
+            let shanquLine = [
+                []
+            ]
+            
+            let airLine1 = [[100, 50], [101.95, 50]];
+            let airLine2 = [[102, 50], [105, 50]];
+            let reports = [[101.95, 50], [102, 50]]; //强制报告点坐标
+            let airLineStyle = new ol.style.Style({
+                stroke: new ol.style.Stroke({
+                    color: '#000000',
+                    width: 2
+                })
+            });
             let style = new ol.style.Style({
                 renderer: function (coor, state) {
+                    console.log('coor', coor.length);
                     let ctx = state.context;
-                    let width = 20;
-                    ctx.beginPath(); //必须加，否则会出现一些不明边框
-                    ctx.lineWidth = 3;
-                    ctx.moveTo(coor[0][0],coor[0][1]);
-                    ctx.lineTo(coor[1][0],coor[1][1]);
-                    ctx.stroke();
-                    ctx.lineWidth = width;
-                    ctx.beginPath();
-                    ctx.strokeStyle = "rgba(255,0,0,0.5)";
-                    ctx.moveTo(coor[0][0], coor[0][1] + 10);
-                    ctx.lineTo(coor[1][0], coor[1][1] + 10);
-                    ctx.stroke();
+                    let peak = new Image();
+                    peak.src = '../img/icon/peak.png';
+                    peak.onload = function() {
+                        DrawReport(ctx, coor, reports, peak);
+                    }
+//                  drawLine(ctx, coor);
                 }
             })
-            let line = new ol.Feature(new ol.geom.LineString(lineCd));
-            line.setStyle(style);
-            vLayer.getSource().addFeature(line);
+            let line1 = new ol.Feature(new ol.geom.LineString(airLine1));
+            let line2 = new ol.Feature(new ol.geom.LineString(airLine2));
+            let line3 = new ol.Feature(new ol.geom.LineString(reports));
+            line1.setStyle(airLineStyle);
+            line2.setStyle(airLineStyle);
+            line3.setStyle(style);
+            vLayer.getSource().addFeature(line1);
+            vLayer.getSource().addFeature(line2);
+            vLayer.getSource().addFeature(line3);
             
-            console.log(map.getView().getResolutions());
-            console.log(Math.sin(Math.PI / 2), Math.atan(111111111111111))
             
         </script>
     </body>

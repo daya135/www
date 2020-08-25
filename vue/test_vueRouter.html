@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<script src="../node_modules/vue/dist/vue.js"></script>
+		<script src="../node_modules/vue-router/dist/vue-router.js"></script>
+		<title>vue-router</title>
+	</head>
+	<body>
+	    <div id="box"> 
+            <router-link to="/one">One</router-link>
+            <router-link to="/two">Two</router-link>
+            <br />
+            <button @click="linkto('one')">One</button>
+            <button @click="linkto('two')">Two</button>
+            <router-view></router-view>
+        </div>
+        <!--定义模版-->
+        <template id="a">
+            <div>
+                第一个router
+                <li>{{this.$route.params.id}}</li>
+                <li>{{this.$route.query.id}}</li>
+            </div>
+        </template>
+        <template id="b">
+            <div>
+                第二个router
+                <li>{{this.$route.params.id}}</li>
+                <li>{{this.$route.query.id}}</li>
+            </div>
+        </template>
+	    <script>
+	        var routes = [
+                {
+                    path:"/one",    //第二、三种传参不能加url变量
+//                  path:"/one/:id",        //第一种传参必要配置
+                    name: 'one',    //第二种传参必要配置
+                    component:{template:"#a"}
+                },
+                {
+                    path:"/two",
+                    name: 'two',    //第二种传参必要配置
+                    component:{template:"#b"}
+                },
+            ];
+            // 定义路由组件
+            var router = new VueRouter({
+                routes
+            });
+            // 定义路由
+            new Vue({
+                el:"#box",
+                router,
+                methods: {
+                    linkto: function(id){
+                        let params = {
+                            id: id
+                        };
+                        router.push({
+//                          path: id + '/' + id, //第一种传参，路径变量  url/{id}这种形式, 连续点击会重复追加url长度导致路径错误
+//                          path: id,       //第二种传参不必要配置
+                            name: id,       //第二种传参必要配置，否则路由到目的地后不能获取到参数
+                            params: params,  //第二种传参，body参数
+//                          query: params    //第三种传参（用name和path都可以路由），url参数  url?id={id}的形式
+                        });
+                    },
+                }
+            });
+	    </script>
+	    
+	</body>
+</html>

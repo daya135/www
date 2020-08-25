@@ -20,90 +20,295 @@
                     var ctx = canvas.getContext('2d');
                     canvas.width = 2000;
                     canvas.height = 2000;
-                    var img = new Image();
-                    img.src = '../img/icon/shanqu.png';
-                    img.onload = function() {
-                        drawLine2(ctx, [[300, 50], [600, 200]]);
-                        drawLine(ctx, [[300, 50], [600, 200]], img);
-                        drawLine2(ctx, [[600, 200], [300, 500]]);
-                        drawLine(ctx, [[600, 200], [300, 500]], img);
-                        drawLine2(ctx, [[700, 200], [400, 50]]);
-                        drawLine(ctx, [[700, 200], [400, 50]], img);
-                        drawLine2(ctx, [[400, 500], [700, 200]]);
-                        drawLine(ctx, [[400, 500], [700, 200]], img);
-                        
-                        
-                        drawLine2(ctx, [[100, 50], [100, 500]]);
-                        drawLine(ctx, [[100, 50], [100, 500]], img);
-                        drawLine2(ctx, [[200, 500], [200, 50]]);
-                        drawLine(ctx, [[200, 500], [200, 50]], img);
-                        
-                        drawLine2(ctx, [[700, 50], [900, 50]]);
-                        drawLine(ctx, [[700, 50], [900, 50]], img);
-                        drawLine2(ctx, [[900, 500], [700, 500]]);
-                        drawLine(ctx, [[900, 500], [700, 500]], img);
+                    var shanqu = new Image();
+                    shanqu.src = '../img/icon/shanqu.png';
+                    shanqu.onload = function() {
+//                      drawLine2(ctx, [[300, 100], [500, 100], [700, 300], [700, 500], [500, 700],[300,700], [100, 500], [100, 300], [300, 100]]);
+                        //扇区线
+                        drawLine(ctx, [[300, 100], [500, 100], [700, 300], [700, 500], [500, 700],[300,700], [100, 500], [100, 300], [300, 100]], shanqu);
                     }
+                    let peak = new Image();
+                    peak.src = '../img/icon/peak.png';
+                    
+                    //报告点线
+//                  peak.onload = function() {
+//                      testReport(ctx, [
+//                              [300, 100], [350, 100], [500, 100], [600, 200],
+//                              [700, 300], [700, 400], [700, 500], [600, 600], 
+//                              [500, 700], [400, 700], [300, 700], [200, 600],
+//                              [100, 500], [100, 400], [100, 300], [200, 200], [300, 100]
+//                          ], [1, 3, 5, 7, 9, 11, 13, 15], peak);
+//                  }
+
+//                  textDrawArc(ctx, [[100, 100], [100, 200]]);
+//                  textDrawArc(ctx, [[200, 100], [300, 100]]);
+//                  textDrawArc(ctx, [[500, 100], [400, 100]]);
+//                  textDrawArc(ctx, [[300, 300], [200, 200]]);
+//                  textDrawArc(ctx, [[310, 310], [410, 210]]);
+//                  textDrawArc(ctx,[[100, 300], [200, 400]]);
+//                  testDrawText(ctx);
+//                  testImageData(ctx);
+                    //空域线（一边实线，一边阴影）
+//                  drawLine3(ctx, [[200, 100], [300, 100], [400, 200], [400, 300], [300, 400],[200,400], [100, 300], [100, 200], [200, 100]], true);
+//                  drawLine3(ctx, [[200, 100],[300, 100]], true);
+//                  drawLine3(ctx, [[300, 100], [400, 200]], true);
                 }
             }
+            
+            function testDrawText(ctx) {
+                ctx.font = "48px serif";
+                ctx.shadowColor = "black";
+                ctx.shadowBlur = 10;
+                ctx.shadowOffsetX = 5;
+                ctx.shadowOffsetY = -5;
+                ctx.strokeText("Hello world", 50, 100);
+            }
+            
+            //直接操纵像素，
+            function testImageData(ctx) {
+                let width = 256;
+                let height = 256;
+                let arr = new Uint8ClampedArray(4 * width * height);
+                for (let i = 0; i < width * height * 4; i += 4) {
+                    arr[i] = Math.ceil(i / 256 / 4) % 256;
+                    arr[i + 1] = (i / 4) % 256;
+                    arr[i + 2] = i % 256;
+                    arr[i + 3] = 255;
+                }
+                let imgData = new ImageData(arr, width, height);
+                ctx.putImageData(imgData, 100, 100);
+            }
+            
             function drawLine2(ctx, line) {
                 ctx.beginPath(); //必须加，否则会出现一些不明边框
                 ctx.moveTo(line[0][0], line[0][1]);
-                ctx.lineTo(line[1][0], line[1][1]);
+                for (let i = 1; i < line.length; i ++) {
+                    ctx.lineTo(line[i][0], line[i][1]);
+                }
                 ctx.stroke();
+                ctx.closePath();
             }
+            
+            function drawLine3(ctx, line, rightFlag) {
+                if(line.length < 2) {
+                    return;
+                }
+                let width = 8; //线宽的一半
+                ctx.save();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#000000"; 
+                drawLine2(ctx, line);
+                ctx.restore();
+                
+                ctx.beginPath(); 
+                ctx.lineWidth = width * 2;
+                ctx.strokeStyle = "#3A5FCDBA"; 
+                ctx.lineJoin = "miter";
+                for (let i = 1; i < line.length; i ++) {
+                    let start = line[i - 1];
+                    let end = line[i];
+                    let offx = 0;
+                    let offy = 0;
+                    if (start[0] == end[0]) {
+//                      offy = 0;
+                        if (end[1] > start[1]) {
+                            rotate = Math.PI / 2; //顺时针旋转90度
+//                          offx = width;
+                        } else {
+                            rotate = Math.PI * 3 / 2; //顺时针旋转270度
+//                          offx = -width;
+                        }
+                    } else if(start[1] == end[1]){
+//                      offx = 0;
+                        if (end[0] > start[0]) {
+                            rotate = 0;
+//                          offy = width;
+                        } else {
+                            rotate = Math.PI;  
+//                          offy = - width;
+                        }
+                    } else {
+                        rotate = Math.atan((end[1] - start[1]) / (end[0] - start[0]));
+                        //因为atan的周期是π，需要调整一三象限的角度值
+                        if (((end[1] - start[1]) < 0 && rotate > 0) || ((end[1] - start[1]) > 0 && rotate < 0)) {
+                            rotate = rotate + Math.PI;
+                        }
+//                      offx = width * Math.sin(rotate);
+//                      offy = width * Math.cos(rotate);
+                    }
+                    offx = width * Math.sin(rotate);    //浮点数精度问题只影响比较，不影响计算，实际测试效果也一样！
+                    offy = width * Math.cos(rotate);
+                    if (rightFlag = false) {
+                        if (i == 1) {
+                            ctx.moveTo(start[0] + offx, start[1] - width * offy);
+                        }
+                        ctx.lineTo(end[0] + offx, end[1] - offy);
+                    } else {
+                        if (i == 1) {
+                            ctx.moveTo(start[0] - offx, start[1] + offy);
+                        }
+                        ctx.lineTo(end[0] - offx, end[1] + offy);
+                    }
+                    console.log(rotate, offx, offy);
+                    console.log(rotate, width * Math.sin(rotate), width * Math.cos(rotate))
+                }
+                ctx.stroke();
+                ctx.closePath();
+            }
+            
+            //绘制扇区线
             function drawLine(ctx, line, img) {
                 let step = 30;
+                for (let i = 1; i < line.length; i ++) {
+                    let start = line[i - 1];
+                    let end = line[i];
+                    let rotate;
+                    let offx;
+                    let offy
+                    if (start[0] == end[0]) {
+                        offx = 0;
+                        if (end[1] > start[1]) {
+                            rotate = Math.PI / 2; //顺时针旋转90度
+                            offy = step / 2
+                        } else {
+                            rotate = Math.PI * 3 / 2; //顺时针旋转270度
+                            offy = -1 * step / 2
+                        }
+                    } else if(start[1] == end[1]){
+                        offy = 0;
+                        if (end[0] > start[0]) {
+                            rotate = 0;
+                            offx = step / 2;
+                        } else {
+                            rotate = Math.PI;   
+                            offx = -1 * step / 2;
+                        }
+                    } else {
+                        rotate = Math.atan((end[1] - start[1]) / (end[0] - start[0]));
+                        offx = Math.cos(rotate) * step / 2;
+                        offy = Math.sin(rotate) * step / 2;
+                        if (((end[1] - start[1]) < 0 && rotate > 0) || ((end[1] - start[1]) > 0 && rotate < 0)) {
+                            console.log('进入到二三象限', rotate / Math.PI);
+                            offx = -offx;
+                            offy = -offy;
+                        }
+                    }
+                    console.log(offx, offy, rotate, Math.sin(rotate));
+                    let x = start[0];
+                    let y = start[1];
+                    let l = Math.sqrt(Math.pow(start[1] - end[1], 2) + Math.pow(start[0] - end[0], 2));
+                    let s = 1;
+                    //交替旋转180度画出扇区图标
+                    for (let i = 0; i < l - (step / 2); i += step){
+                        let ox = offx * (Math.ceil(i / step * 2) + 1);
+                        let oy = offy * (Math.ceil(i / step * 2) + 1);
+                        ctx.save();
+                        ctx.translate(x + ox, y + oy);
+                        ctx.rotate(rotate);
+                        ctx.drawImage(img, -step / 2, -step / 2, step, step);
+                        ctx.restore();
+                        s = -s;
+                        rotate += Math.PI * s;
+                    }
+                }
+            }
+            
+            function testReport(ctx, line, points, img) {
+                let width = 15; //图像宽度的一半
                 let start = line[0];
-                let end = line[line.length - 1];
-                let rotate;
-                let offx;
-                let offy
-                if (start[0] == end[0]) {
-                    offx = 0;
-                    if (end[1] > start[1]) {
+                for (let i = 1; i < line.length; i ++) {
+                    let end = line[i];
+                    if(points.indexOf(i) < 0) {
+                        drawLine2(ctx, [start, end]);
+                        start = end;
+                        continue;
+                    }
+                    //执行到这里时end已经是一个导航台坐标了                    
+                    
+                    if (start[0] == end[0]) {
+                        if (end[1] > start[1]) {
+                            rotate = Math.PI / 2; //顺时针旋转90度
+                        } else {
+                            rotate = Math.PI * 3 / 2; //顺时针旋转270度
+                        }
+                    } else if(start[1] == end[1]){
+                        if (end[0] > start[0]) {
+                            rotate = 0;
+                        } else {
+                            rotate = Math.PI;  
+                        }
+                    } else {
+                        rotate = Math.atan((end[1] - start[1]) / (end[0] - start[0]));
+                        //因为atan的周期是π，需要调整一三象限的角度值
+                        if (((end[1] - start[1]) < 0 && rotate > 0) || ((end[1] - start[1]) > 0 && rotate < 0)) {
+                            rotate = rotate + Math.PI;
+                        }
+                    }
+                    offx = width * Math.cos(rotate);    //浮点数精度问题只影响比较，不影响计算，实际测试效果也一样！
+                    offy = width * Math.sin(rotate);
+                    let p1 = [end[0] - offx, end[1] - offy];
+                    let p2 = [end[0] + offx, end[1] + offy];
+                    
+                    ctx.lineWidth = 2;
+                    ctx.strokeStyle = "#000000"; 
+                    drawLine2(ctx, [start, p1]);
+                    ctx.restore();
+                    start = p2;
+                    
+                    ctx.save();
+                    ctx.translate(end[0], end[1]);
+                    ctx.rotate(rotate);
+                    ctx.drawImage(img, -width, -width, width * 2, width * 2);
+                    ctx.restore();
+                    
+                }
+            }
+            
+            function textDrawArc(ctx, line) {
+                let start = line[0];
+                let end = line[1];
+                let length = Math.sqrt(Math.pow(start[0] - end[0], 2) + Math.pow(start[1] - end[1], 2));
+                let radius = length / 2;
+                let centerx = start[0] + (end[0] - start[0]) / 2;
+                let centery = start[1] + (end[1] - start[1]) / 2;
+                if(start[0] == end[0]) {
+                    if(end[1] > start[1]) {
                         rotate = Math.PI / 2; //顺时针旋转90度
-                        offy = step / 2
                     } else {
                         rotate = Math.PI * 3 / 2; //顺时针旋转270度
-                        offy = -1 * step / 2
                     }
-                } else if(start[1] == end[1]){
-                    offy = 0;
-                    if (end[0] > start[0]) {
+                } else if(start[1] == end[1]) {
+                    if(end[0] > start[0]) {
                         rotate = 0;
-                        offx = step / 2;
                     } else {
-                        rotate = Math.PI;   
-                        offx = -1 * step / 2;
+                        rotate = Math.PI;
                     }
                 } else {
                     rotate = Math.atan((end[1] - start[1]) / (end[0] - start[0]));
-                    offx = Math.cos(rotate) * step / 2;
-                    offy = Math.sin(rotate) * step / 2;
-                    if (((end[1] - start[1]) < 0 && rotate > 0) || ((end[1] - start[1]) > 0 && rotate < 0)) {
-                        console.log('进入到一四象限', rotate / Math.PI);
-                        offx = -offx;
-                        offy = -offy;
+                    //因为atan的周期是π，需要调整一三象限的角度值
+                    if(((end[1] - start[1]) < 0 && rotate > 0) || ((end[1] - start[1]) > 0 && rotate < 0)) {
+                        rotate = rotate + Math.PI;
                     }
                 }
-                console.log(offx, offy, rotate, Math.sin(rotate));
-                let x = start[0];
-                let y = start[1];
-                let l = Math.sqrt(Math.pow(start[1] - end[1], 2) + Math.pow(start[0] - end[0], 2));
-                let s = 1;
-                //交替旋转180度画出扇区图标
-                for (let i = 0; i < l - (step / 2); i += step){
-                    let ox = offx * (Math.ceil(i / step * 2) + 1);
-                    let oy = offy * (Math.ceil(i / step * 2) + 1);
-                    ctx.save();
-                    ctx.translate(x + ox, y + oy);
-                    ctx.rotate(rotate);
-                    ctx.drawImage(img, -step / 2, -step / 2, step, step);
-                    ctx.restore();
-                    s = -s;
-                    rotate += Math.PI * s;
-                }
+                let w = length / 4;
+                let point1 = [centerx + w * Math.cos(rotate + Math.PI / 6), centery + w * Math.sin(rotate + Math.PI / 6)];
+                let point2 = [centerx + w * Math.cos(rotate + 5 * Math.PI / 6), centery + w * Math.sin(rotate + 5 * Math.PI / 6)];
+                let point3 = [centerx + w * Math.cos(rotate + 3 / 2 * Math.PI), centery + w * Math.sin(rotate + 3 / 2 * Math.PI)];
+                console.log(point1, point2, point3);
+                ctx.beginPath();
+                ctx.moveTo(point1[0], point1[1]);
+                ctx.lineTo(point2[0], point2[1]);
+                ctx.lineTo(point3[0], point3[1]);
+                ctx.fill();
+                ctx.closePath();
+                
+                ctx.moveTo(end[0], end[1]);
+                ctx.lineWidth = 3;
+                ctx.arc(centerx, centery, radius, rotate, rotate + Math.PI);
+                ctx.stroke();
+                console.log(centerx, centery, radius, rotate);
             }
+   
         </script>
     </body>
 

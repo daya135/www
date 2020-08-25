@@ -1,20 +1,27 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Image ArcGIS MapServer</title>
-    <link rel="stylesheet" href="https://openlayers.org/en/v5.1.3/css/ol.css" type="text/css">
-    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
-    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
-
+    <meta charset="utf-8">  
+    <title>test</title>
   </head>
   <body>
-    <div id="map" class="map"></div>
-    <script type="module">
-      import a from './js/testmodle.js';
-      import {inherits} from './ol/interaction.js';
-      
-      console.log(a);
-      
-    </script>
+    <form id="login">
+        <input id="name" value="aaa"/>
+    </form>
+    <script>
+        var tool = (
+            function () {
+                function _(){}
+                _.test = function() {
+                    console.log("复杂定义");
+                }
+                return _;
+            }
+        )();
+        
+        tool.test();
+        
+    </script>    
+    
   </body>
 </html>

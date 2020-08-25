@@ -42,15 +42,15 @@
 
             let points = [0, 0];
             
-//          for(let i = 0; i < 50; i++) {
-//              for (let j = 0; j < 85; j ++) {
-//                  let point = [points[0] + i * 1, points[1] + 1 * j];
-////                  let point = [points[0] + i * 200000, points[1] + j * 200000];
-//                  let gPoint = new ol.Feature(new ol.geom.Point(new ol.proj.fromLonLat(point, 'EPSG:3857')));
-//                  gPoint.setStyle(pointStyle);
-//                  source.addFeature(gPoint);
-//              }
-//          }
+            for(let i = 0; i < 50; i++) {
+                for (let j = 0; j < 85; j ++) {
+                    let point = [points[0] + i * 1, points[1] + 1 * j];
+//                  let point = [points[0] + i * 200000, points[1] + j * 200000];
+                    let gPoint = new ol.Feature(new ol.geom.Point(new ol.proj.fromLonLat(point, 'EPSG:3857')));
+                    gPoint.setStyle(pointStyle);
+                    source.addFeature(gPoint);
+                }
+            }
 
             var proj = new ol.proj.Projection("EPSG:4326");
             var coor = new ol.proj.fromLonLat([115, 32], 'EPSG:4326');
