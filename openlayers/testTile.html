@@ -38,6 +38,10 @@
         origin: [0, 0],
         resolutions: resolutions // 设置分辨率
     });
+    
+    let vLayer = new ol.layer.Vector({
+         source: new ol.source.Vector({})
+     });
 
     let TileLayers = new ol.layer.Tile({
         source: new ol.source.TileImage({
@@ -83,15 +87,19 @@
     let map = new ol.Map({
         layers: [
             TileLayers,
+            vLayer
             //          new ol.layer.Tile({source: new ol.source.OSM()}),
         ],
         view: new ol.View({
-            center: ol.proj.transform([0, 0], 'EPSG:4326', 'EPSG:3857'),
+            center: ol.proj.transform([120, 30], 'EPSG:4326', 'EPSG:3857'),
             zoom: 1,
             //          rotation: 1
         }),
         target: 'mainMap'
     });
+    
+    let gPoint = new ol.Feature(new ol.geom.Point(ol.proj.transform([116.3, 40], 'EPSG:4326', 'EPSG:3857')));
+    vLayer.getSource().addFeature(gPoint);
 
     //按位补0
     function zeroFill(num, len, radix) {
