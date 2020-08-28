@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>test moudle</title>
+		<script src="./index.js" type="module"></script>	<!-- 须添加type="module"才能引入，对于带有type="module"的<script>，都是异步加载 -->
+	</head>
+	<body>
+		<p>测试不使用webpack打包，直接使用ES6的export、import</p>
+		<span id="span"></span>
+		<button onclick="attention()">attention</button>	<!--无法在html中内联使用type="module"的js块|文件 -->
+		<button onclick="attention1()">异步加载</button>	
+		<button id="btn2">attention2</button>
+		<script type="text/javascript" defer>	<!-- 异步加载 -->
+			function attention1() {
+				alert("异步加载的脚本");
+			}
+		</script>
+		<script type="module">	<!-- 内联module -->
+			import person from './testModule.js'
+			
+			function attention() {
+				alert(person.name);
+			}
+			
+			document.getElementById("btn2").onclick = attention;	//可以通过动态绑定使用import的对象
+		</script>
+	</body>
+</html>

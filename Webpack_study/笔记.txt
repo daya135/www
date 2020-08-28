@@ -1,3 +1,7 @@
+运行方式：
+进入Webpack_study目录，执行：
+..\node_modules\.bin\webpack 
+
 1. npm scripts 使用指南  http://www.ruanyifeng.com/blog/2016/10/npm_scripts.html
    其中webpack的打包命令就定义在package.json中
 2. 全局安装了一个轻量级的http-server ，可以直接在控制台输入http-server启动

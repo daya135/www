@@ -2,13 +2,20 @@
 <html>
   <head>
     <title>test webpack</title>
+	<script src="dist/bundle.js"></script>
+	<script src="main.js"></script>
   </head>
   <body>
-     <h1>aaaa</h1>
-    <script src="bundle.js"></script>
-    <script>
-        console.log('咋回事啊')
-    </script>
-    <!-- 血的教训，openlayers的script一定要在div后面引用,且标签必须封闭 -->
+	<p>测试使用webpack打包js</p>
+	<span id="span" onclick="spanclick(this)">span</span> <!--为啥绑定不上，要webpack有啥用？？-->
+	<button id="button1">button</button>
+	
+	<script type="text/javascript">
+		console.log(dog);	<!-- 普通js文件中的内容可以使用 -->
+		document.getElementById("button1").onclick=function(evt) {
+			console.log(evt);
+			console.log(person);<!--无法使用bundle.js中的对象，why？？那我要webpack有什么用？？？？-->
+		}
+	</script>
   </body>
 </html>
